@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { WorkflowPageComponent } from './pages/workflow-page.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [WorkflowPageComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
