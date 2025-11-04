@@ -1,0 +1,30 @@
+# Alert Workflow Module Development
+# Use this gitignore when working specifically on the alert-wf module
+
+# Temporarily ignore other modules during alert-wf development
+# Uncomment these lines when working exclusively on alert-wf
+# src/app/modules/admin/alerts/
+# src/app/modules/admin/calendar/
+# src/app/modules/admin/dashboards/
+# src/app/modules/admin/on-call/
+# src/app/modules/admin/reports/
+# src/app/modules/admin/settings/
+# src/app/modules/admin/stations/
+# src/app/modules/admin/support/
+# src/app/modules/admin/user-profile/
+# src/app/modules/admin/users/
+# src/app/modules/admin/alert-supervisor/
+# src/app/modules/auth/
+# src/app/modules/command-center/
+# src/app/modules/landing/
+# src/app/modules/station/
+
+# Module-specific temporary files
+src/app/modules/admin/alert-wf/.temp/
+src/app/modules/admin/alert-wf/temp/
+src/app/modules/admin/alert-wf/**/*.temp
+src/app/modules/admin/alert-wf/**/*.backup
+
+# Development logs specific to alert-wf
+alert-wf-debug.log
+workflow-designer-debug.log

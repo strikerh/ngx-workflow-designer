@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@alert-wf/core/*": ["./core/*"],
+      "@alert-wf/services/*": ["./core/services/*"],
+      "@alert-wf/models/*": ["./core/models/*"],
+      "@alert-wf/designer/*": ["./workflow-designer/*"],
+      "@alert-wf/list/*": ["./workflow-list/*"]
+    }
+  },
+  "include": [
+    "./**/*"
+  ],
+  "exclude": []
+}
