@@ -1,0 +1,21 @@
+{
+  "name": "@quexlo/alert-workflow",
+  "version": "0.0.1",
+  "description": "Configurable Alert Workflow Designer (Angular 20, zoneless)",
+  "keywords": ["angular", "workflow", "designer", "alert", "library"],
+  "sideEffects": false,
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/animations": ">=20",
+    "@angular/common": ">=20",
+    "@angular/compiler": ">=20",
+    "@angular/core": ">=20",
+    "@angular/forms": ">=20",
+    "@angular/platform-browser": ">=20",
+    "@angular/router": ">=20",
+    "primeng": ">=20",
+    "primeicons": ">=7",
+    "rxjs": ">=7.8",
+    "tslib": ">=2.3.0"
+  }
+}

@@ -1,115 +1,129 @@
-# Workflow Designer Lib (extraction plan)
+# @quexlo/alert-workflow (Angular 20, Standalone, Zoneless)
 
-This project currently hosts the workflow designer as an app feature. The code is now parameterized via providers so it can be extracted into a reusable Angular library with minimal changes.
+Reusable workflow designer as a drop‑in component. Tailwind 3 + PrimeNG 20, fully standalone, no NgModules, and DI via tokens/providers.
 
-## Configure in an app
+## Install (local monorepo path alias)
 
-Provide the configuration once at bootstrap:
+This repo wires a TS path alias in `tsconfig.json`:
+
+```jsonc
+{
+  "compilerOptions": {
+    "paths": {
+      "@quexlo/alert-workflow": ["./projects/alert-workflow/src/public-api.ts"]
+    }
+  }
+}
+```
+
+In external hosts, publish the lib and install it, then import from `@quexlo/alert-workflow`.
+
+## Use in a host app
+
+1) Provide config in `ApplicationConfig`:
 
 ```ts
-import { WORKFLOW_LIB_CONFIG } from './src/app/alert-wf/core/workflow-lib.config';
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeng/themes/lara';
 
-providers: [
-  {
-    provide: WORKFLOW_LIB_CONFIG,
-    useValue: {
+import { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from '@quexlo/alert-workflow';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter([]),
+    provideHttpClient(),
+    provideAnimations(),
+    providePrimeNG({ theme: { preset: Lara, options: { darkModeSelector: 'none' } } }),
+    ...provideAlertWorkflow(<WorkflowDesignerLibConfig>{
       api: {
-        baseUrl: 'https://demo.quexlo.com:8443/api/workflow',
-        // Optional: use a different endpoint for templates listing
-        templatesUrl: 'https://demo.quexlo.com:8443/api/workflow',
+        baseUrl: 'https://example.com/api/workflow',
+        templatesUrl: 'https://example.com/api/workflow',
         token: 'Bearer ...'
       },
       features: {
-        import: true,
+        import: false,
         export: true,
         new: true,
         templates: true,
         save: true,
-        workflowList: false,
-        // Header back button control
+        workflowList: true,
         backButton: true,
-        backUrl: '/'
-      }
-    }
-  }
-]
-```
-
-Header buttons (Back, New, Templates, Import, Export, Save) are dynamically shown/hidden by these flags. Use `backButton` to toggle the Back button and `backUrl` to define where it navigates (defaults to `/`). The API client consumes the configurable `baseUrl`, optional `templatesUrl`, and `token`.
-
-## Extract as a library (Angular 17+/20)
-
-1. Generate a library shell:
-   - `ng generate library workflow-designer`
-   - Or manually create `projects/workflow-designer/` with `ng-packagr`.
-2. Move these files into the lib with their relative structure and exports:
-   - `alert-wf/workflow-designer/**/*`
-   - `alert-wf/core/services/workflow-api.service.ts`
-   - `alert-wf/core/workflow-lib.config.ts`
-   - any shared helpers/models (`workflow-designer.interfaces.ts`, nodes config services)
-3. Create `public-api.ts` exporting the standalone components and injection tokens:
-   - `WorkflowDesignerComponent`
-   - `WorkflowHeaderComponent`
-   - `WORKFLOW_LIB_CONFIG` and `WorkflowDesignerLibConfig`
-4. Update imports to reference the lib entry points.
-5. Build and publish:
-   - `ng build workflow-designer`
-   - `npm publish dist/workflow-designer`
-
-## Advanced options
-
-- Node palette config: Provide `WORKFLOW_NODE_TYPES` to augment/override node types.
-  Example:
-
-  ```ts
-  import { WORKFLOW_NODE_TYPES } from './src/app/alert-wf/core/workflow-node-types.token';
-
-  providers: [
-    {
-      provide: WORKFLOW_NODE_TYPES,
-      useValue: [
-        {
-          type: 'action.sms',
-          label: 'SMS (Customized)',
-          description: 'Send SMS via custom gateway',
-          category: 'action',
-          icon: "<span class='material-icons'>sms</span>",
-          color: 'bg-emerald-100 border-emerald-300 text-emerald-800',
-          nodeColor: 'bg-emerald-50 border-emerald-200',
-          properties: [
-            { key: 'to', label: 'Recipients', type: 'text', required: true },
-            { key: 'message', label: 'Message', type: 'textarea', required: true },
-            { key: 'gateway', label: 'Gateway', type: 'text', required: false },
-          ],
-          exits: ['onSuccess', 'onFailure']
-        },
-        {
-          type: 'action.webhook.notify',
-          label: 'Notify Webhook',
-          description: 'POST to an external service',
-          category: 'action',
-          icon: "<span class='material-icons'>http</span>",
-          color: 'bg-purple-100 border-purple-300 text-purple-800',
-          nodeColor: 'bg-purple-50 border-purple-200',
-          properties: [
-            { key: 'url', label: 'URL', type: 'text', required: true },
-            { key: 'payload', label: 'Payload', type: 'textarea', required: false },
-          ],
-          exits: ['onSuccess', 'onFailure']
-        }
-      ]
-    }
+        backUrl: '/workflows'
+      },
+      palette: { categories: PALETTE_CATEGORIES }
+    })
   ]
-  ```
-- i18n/labels: Add optional labels section to the config for button texts and tooltips.
-- Auth strategy: Instead of a token string, accept a function or `HttpHeaders` factory.
-- Events: Expose output events for host apps (onSave, onValidate, onNodeSelect).
-- Theming: Keep using PrimeNG provider; allow hosts to override via their own provider.
-
-Once these steps are followed, the designer becomes a drop‑in component for any Angular app via:
-
-```html
-<workflow-designer></workflow-designer>
+};
 ```
 
-backed by the provider config above.
+2) Route to the component:
+
+```ts
+export const routes = [
+  {
+    path: '',
+    loadComponent: () => import('@quexlo/alert-workflow').then(m => m.WorkflowDesignerComponent)
+  }
+];
+```
+
+That’s it—the component renders with the configured API and features.
+
+### Using environment variables
+
+If your host app manages API settings via Angular environments, wire them directly into the provider:
+
+```ts
+import { environment } from './environments/environment';
+
+...provideAlertWorkflow(<WorkflowDesignerLibConfig>{
+  api: {
+    baseUrl: `${environment.workflowApiUrl}/workflow`,
+    templatesUrl: `${environment.workflowApiUrl}/workflow`,
+    token: environment.workflowApiToken
+  },
+  features: { /* flags here */ },
+  palette: { categories: PALETTE_CATEGORIES }
+})
+```
+
+### Upgrade notes (from app-embedded to library)
+
+- Replace local imports with library imports:
+  - `@quexlo/alert-workflow` → imports `WorkflowDesignerComponent`, `provideAlertWorkflow`, tokens, types.
+- Remove duplicated app-side implementations of designer components/services.
+- Provide the config via `provideAlertWorkflow` once at bootstrap.
+- Route to `WorkflowDesignerComponent` using `loadComponent`.
+
+### Try it locally
+
+The demo app in this repo already consumes the library.
+
+- Dev server
+
+```powershell
+npm start
+```
+
+- Build
+
+```powershell
+npm run build
+```
+
+## Advanced
+
+- Extra node types: provide an array via the second param of `provideAlertWorkflow(config, extraNodeTypes)`.
+- Nodes config source: set `nodesConfig: { source: 'json'|'ts', jsonUrl?: string }` on the config.
+- Feature flags control header actions (New/Templates/Import/Export/Save/Back).
+- Palette: override categories or use `PALETTE_CATEGORIES` as a base.
+
+## Exports
+
+- `WorkflowDesignerComponent`
+- `provideAlertWorkflow`, `WORKFLOW_LIB_CONFIG`, `WorkflowDesignerLibConfig`
+- `PALETTE_CATEGORIES`

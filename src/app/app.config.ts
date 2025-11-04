@@ -7,8 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
 
 import { routes } from './app.routes';
-import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from './alert-wf/core/workflow-lib.config';
-import { PALETTE_CATEGORIES } from './alert-wf/workflow-designer/workflow-nodes-config.data';
+import { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from '@quexlo/alert-workflow';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -27,30 +26,26 @@ export const appConfig: ApplicationConfig = {
         }
       }
     }),
-    {
-      provide: WORKFLOW_LIB_CONFIG,
-      useValue: <WorkflowDesignerLibConfig>{
-        api: {
-          baseUrl: `${environment.workflowApiUrl}/workflow`,
-          templatesUrl: `${environment.workflowApiUrl}/workflow`,
-          token: environment.workflowApiToken
-        },
-        features: {
-          import: false,
-          export: true,
-          new: true,
-          templates: true,
-          save: true,
-          workflowList: true,
-          backButton: false,
-          backUrl: '/'
-        },
-        palette: {
-          // You can override or reorder categories here; defaults to PALETTE_CATEGORIES
-          categories: PALETTE_CATEGORIES
-        }
+    ...provideAlertWorkflow(<WorkflowDesignerLibConfig>{
+      api: {
+        baseUrl: `${environment.workflowApiUrl}/workflow`,
+        templatesUrl: `${environment.workflowApiUrl}/workflow`,
+        token: environment.workflowApiToken
+      },
+      features: {
+        import: false,
+        export: true,
+        new: true,
+        templates: true,
+        save: true,
+        workflowList: true,
+        backButton: false,
+        backUrl: '/'
+      },
+      palette: {
+        categories: PALETTE_CATEGORIES
       }
-    },
+    }),
     ConfirmationService,
     MessageService
   ]

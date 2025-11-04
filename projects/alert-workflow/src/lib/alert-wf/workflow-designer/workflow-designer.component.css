@@ -1,0 +1,80 @@
+/* Workflow Designer Component Styles */
+
+/* Ensure proper line clamping for node labels */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* Custom scrollbar for inspector panel */
+:host ::ng-deep .overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+:host ::ng-deep .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:host ::ng-deep .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+:host ::ng-deep .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ensure cursor changes for draggable nodes */
+.absolute.rounded-xl.border.shadow-sm {
+  cursor: move;
+}
+
+.absolute.rounded-xl.border.shadow-sm:hover {
+  cursor: grab;
+}
+
+.absolute.rounded-xl.border.shadow-sm:active {
+  cursor: grabbing;
+}
+
+/* Custom range slider styling */
+input[type="range"] {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: #e2e8f0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  background: #4f46e5;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #e2e8f0;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #4f46e5;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}

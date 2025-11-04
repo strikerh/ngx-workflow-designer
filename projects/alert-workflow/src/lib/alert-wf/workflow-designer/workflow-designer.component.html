@@ -1,0 +1,58 @@
+<!-- Loading State -->
+<div *ngIf="loading()" class="h-screen w-full flex items-center justify-center bg-slate-50">
+  <div class="text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+    <p class="text-gray-600">Loading workflow...</p>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error() && !loading()" class="h-screen w-full flex items-center justify-center bg-slate-50">
+  <div class="text-center max-w-md">
+    <div class="bg-red-50 border border-red-200 rounded-md p-6">
+      <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-red-800 mb-2">Error Loading Workflow</h3>
+      <p class="text-red-700 mb-4">{{ error() }}</p>
+      <div class="space-x-3">
+        <button 
+          (click)="goBackToList()"
+          class="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded border border-red-300 transition-colors duration-200">
+          Back to Workflows
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Workflow Designer -->
+<div *ngIf="!loading() && !error()" class="h-[90vh] w-full px-3">
+  <div class="h-full w-full grid gap-2 grid-rows-[56px_1fr]"
+       [class.grid-cols-[280px_1fr_360px]]="!workflowService.isFullscreen()"
+       [class.grid-cols-[0px_1fr_0px]]="workflowService.isFullscreen()">
+    <!-- Header -->
+    <app-workflow-header 
+      [class.col-span-3]="!workflowService.isFullscreen()" 
+      [class.col-span-1]="workflowService.isFullscreen()" 
+      class="row-[1]"></app-workflow-header>
+
+    <!-- Left Sidebar - Node Palette (hidden in fullscreen) -->
+    <app-workflow-palette *ngIf="!workflowService.isFullscreen()" class="col-[1] row-[2]"></app-workflow-palette>
+
+    <!-- Main Canvas -->
+    <app-workflow-canvas 
+      [class.col-[2]]="!workflowService.isFullscreen()" 
+      [class.col-[1]]="workflowService.isFullscreen()" 
+      class="row-[2]"></app-workflow-canvas>
+
+    <!-- Right Sidebar - Property Inspector (hidden in fullscreen) -->
+    <app-workflow-inspector *ngIf="!workflowService.isFullscreen()" class="col-[3] row-[2]"></app-workflow-inspector>
+
+    <!-- Bottom Panel - Simulation & Logs - Hidden for now -->
+    <!-- <app-workflow-logs class="col-span-3 row-[3]"></app-workflow-logs> -->
+  </div>
+  
+  <!-- Validation Dialog -->
+  <app-workflow-validation-dialog></app-workflow-validation-dialog>
+</div>

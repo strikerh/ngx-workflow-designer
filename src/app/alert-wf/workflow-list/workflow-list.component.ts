@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { Router } from '@angular/router';
-import { WorkflowApiService, ApiWorkflow } from '../core/services/workflow-api.service';
+import { WorkflowApiService, ApiWorkflow } from '@quexlo/alert-workflow';
 import { Ripple } from 'primeng/ripple';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
