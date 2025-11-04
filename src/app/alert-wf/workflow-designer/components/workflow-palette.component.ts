@@ -1,9 +1,10 @@
-import {Component, inject} from '@angular/core';
+import {Component, Inject, Optional, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {WorkflowDesignerService} from '../workflow-designer.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PALETTE_CATEGORIES } from '../workflow-nodes-config.data';
 import { PaletteCategoryConfig } from '../workflow-designer.interfaces';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workflow-lib.config';
 
 @Component({
     selector: 'app-workflow-palette',
@@ -51,10 +52,12 @@ import { PaletteCategoryConfig } from '../workflow-designer.interfaces';
 export class WorkflowPaletteComponent {
     workflowService = inject(WorkflowDesignerService);
     private sanitizer = inject(DomSanitizer);
+    constructor(@Optional() @Inject(WORKFLOW_LIB_CONFIG) private libConfig?: WorkflowDesignerLibConfig) {}
 
     // Dynamic categories configuration from centralized data
     get categories() {
-        return PALETTE_CATEGORIES.map(category => ({
+        const categories = this.libConfig?.palette?.categories ?? PALETTE_CATEGORIES;
+        return categories.map(category => ({
             ...category,
             nodes: this.getNodesForCategory(category)
         })).filter(category => category.nodes.length > 0); // Only show categories with nodes

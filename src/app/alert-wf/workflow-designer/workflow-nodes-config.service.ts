@@ -1,7 +1,8 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, Inject, Optional } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NodeTypeConfig, WorkflowNodesConfig, PaletteItem } from './workflow-designer.interfaces';
 import { WORKFLOW_NODES_CONFIG } from './workflow-nodes-config.data';
+import { WORKFLOW_NODE_TYPES } from '../core/workflow-node-types.token';
 import { firstValueFrom } from 'rxjs';
 
 /**
@@ -29,7 +30,7 @@ export class WorkflowNodesConfigService {
   private nodeTypesConfig = signal<NodeTypeConfig[]>([]);
   private configLoaded = signal<boolean>(false);
   
-  constructor() {
+  constructor(@Optional() @Inject(WORKFLOW_NODE_TYPES) private extraNodeTypes?: any) {
     this.loadConfiguration();
   }
   
@@ -40,7 +41,8 @@ export class WorkflowNodesConfigService {
     if (USE_TYPESCRIPT_CONFIG) {
       // Use TypeScript configuration (immediate, type-safe)
       console.log('📦 Loading workflow configuration from TypeScript module');
-      this.nodeTypesConfig.set(WORKFLOW_NODES_CONFIG);
+      const base = WORKFLOW_NODES_CONFIG;
+      this.nodeTypesConfig.set(this.mergeWithExtraTypes(base));
       this.configLoaded.set(true);
     } else {
       // Use JSON configuration (hot-reloadable)
@@ -49,15 +51,34 @@ export class WorkflowNodesConfigService {
         const config = await firstValueFrom(
           this.http.get<WorkflowNodesConfig>('/workflow-nodes-config.json')
         );
-        this.nodeTypesConfig.set(config.nodeTypes);
+        this.nodeTypesConfig.set(this.mergeWithExtraTypes(config.nodeTypes));
         this.configLoaded.set(true);
       } catch (error) {
         console.error('Failed to load workflow nodes configuration, using fallback:', error);
         // Use fallback configuration if file loading fails
-        this.nodeTypesConfig.set(this.getFallbackConfiguration());
+        this.nodeTypesConfig.set(this.mergeWithExtraTypes(this.getFallbackConfiguration()));
         this.configLoaded.set(true);
       }
     }
+  }
+
+  /**
+   * Merge provided extra node types with defaults. If a type exists, shallow-merge; else append.
+   */
+  private mergeWithExtraTypes(base: NodeTypeConfig[]): NodeTypeConfig[] {
+    const extras = (this.extraNodeTypes as NodeTypeConfig[] | undefined) || [];
+    if (!extras.length) return base;
+
+    const byType = new Map(base.map((c) => [c.type, c] as const));
+    for (const ext of extras) {
+      const existing = byType.get(ext.type);
+      if (existing) {
+        byType.set(ext.type, { ...existing, ...ext });
+      } else {
+        byType.set(ext.type, ext);
+      }
+    }
+    return Array.from(byType.values());
   }
 
   /**

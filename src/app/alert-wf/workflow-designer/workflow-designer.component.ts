@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -25,8 +25,8 @@ import { WorkflowDesignerService } from './workflow-designer.service';
 })
 export class WorkflowDesignerComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  loading = false;
-  error: string | null = null;
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
 
   constructor(
     private route: ActivatedRoute,
@@ -44,6 +44,8 @@ export class WorkflowDesignerComponent implements OnInit, OnDestroy {
           this.loadWorkflow(workflowId);
         } else {
           // New workflow - clear the designer and save empty state
+          this.error.set(null);
+          this.loading.set(false);
           this.workflowService.resetAll();
           this.workflowService.saveStateToHistory();
         }
@@ -56,19 +58,19 @@ export class WorkflowDesignerComponent implements OnInit, OnDestroy {
   }
 
   private async loadWorkflow(id: string) {
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
 
     try {
       const success = await this.workflowService.loadWorkflow(id);
       if (!success) {
-        this.error = 'Failed to load workflow. It may not exist or be accessible.';
+        this.error.set('Failed to load workflow. It may not exist or be accessible.');
       }
     } catch (error) {
-      this.error = 'An error occurred while loading the workflow.';
+      this.error.set('An error occurred while loading the workflow.');
       console.error('Error loading workflow:', error);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 

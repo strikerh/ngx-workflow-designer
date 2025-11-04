@@ -1118,7 +1118,13 @@ export class WorkflowDesignerService {
   async getAllWorkflows(): Promise<ApiWorkflow[]> {
     try {
       const response = await firstValueFrom(this.workflowApi.getWorkflows({ limit: 100 }));
-      return response.errors.length === 0 ? response.results || [] : [];
+      if (response.errors.length !== 0) return [];
+      let results: any = response.results;
+      // Handle both shapes: results: ApiWorkflow[] OR results: { data: ApiWorkflow[] }
+      if (results && Array.isArray(results.data)) {
+        results = results.data;
+      }
+      return (Array.isArray(results) ? results : []) as ApiWorkflow[];
     } catch (error) {
       console.error('Error fetching workflows:', error);
       return [];

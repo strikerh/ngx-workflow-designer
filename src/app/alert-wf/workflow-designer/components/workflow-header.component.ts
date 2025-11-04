@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 import { ApiWorkflow } from '../../core/services/workflow-api.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workflow-lib.config';
 
 @Component({
   selector: 'app-workflow-header',
@@ -16,10 +17,10 @@ import { ToastModule } from 'primeng/toast';
       <div class="flex items-center gap-2 justify-between w-full">
         <!-- Back Button -->
          <div class="flex items-center gap-2">
-        <button 
+        <button *ngIf="showBack"
           class="text-sm px-1 py-1 rounded-md border hover:bg-slate-50 flex items-center gap-1" 
           (click)="goBackToList()"
-          title="Back to Workflows"> 
+          title="Back">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
@@ -41,13 +42,13 @@ import { ToastModule } from 'primeng/toast';
           {{ workflowService.isConnectMode() ? 'Connecting… (click source then target)' : 'Connect' }}
         </button> -->
         <div class="flex items-center gap-2">
-        <button 
+        <button *ngIf="showNew"
           class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50 flex items-center gap-1" 
           (click)="createNewWorkflow()">
           New
         </button>
                <!-- Templates Dropdown -->
-        <div class="relative">
+        <div class="relative" *ngIf="showTemplates">
           <button 
             class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50 flex items-center gap-1" 
             (click)="workflowService.toggleTemplatesDropdown()">
@@ -68,6 +69,32 @@ import { ToastModule } from 'primeng/toast';
             <div class="border-t mt-1 pt-1 px-3 pb-2 text-[10px] text-slate-400">Click a template to load</div>
           </div>
         </div>
+        
+        <!-- Workflows Dropdown (optional) -->
+        <div class="relative" *ngIf="showWorkflowList">
+          <button 
+            class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50 flex items-center gap-1" 
+            (click)="toggleWorkflowsDropdown()">
+            Workflows ▾
+          </button>
+          <div 
+            *ngIf="showWorkflowsDropdown()" 
+            class="absolute mt-1 w-56 rounded-md border bg-white shadow z-10 max-h-72 overflow-auto">
+            <div *ngIf="loadingWorkflows()" class="px-3 py-2 text-sm text-slate-500">Loading…</div>
+            <ng-container *ngIf="!loadingWorkflows()">
+              <ng-container *ngFor="let wf of workflows(); trackBy: trackWorkflow">
+                <button 
+                  class="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm flex justify-between items-center"
+                  [class.bg-indigo-50]="wf.workflowId.toString() === workflowService.currentWorkflowId()"
+                  (click)="selectWorkflow(wf.workflowId.toString())">
+                  <span>{{ wf.name }}</span>
+                  <span *ngIf="wf.workflowId.toString() === workflowService.currentWorkflowId()" class="text-indigo-500 text-xs">active</span>
+                </button>
+              </ng-container>
+              <div class="border-t mt-1 pt-1 px-3 pb-2 text-[10px] text-slate-400">Select a workflow to load</div>
+            </ng-container>
+          </div>
+        </div>
         <button 
           class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50 flex items-center gap-1.5" 
           (click)="workflowService.runValidate()"
@@ -77,9 +104,9 @@ import { ToastModule } from 'primeng/toast';
           </svg>
           Validate
         </button>
-        <button class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50" (click)="importJson()">Import JSON</button>
-        <button class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50" (click)="workflowService.exportJson()">Export JSON</button>
-        <button class="text-sm px-3 py-1 rounded-md border bg-green-50 border-green-300 hover:bg-green-100 text-green-700" (click)="saveToApi()">
+        <button *ngIf="showImport" class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50" (click)="importJson()">Import JSON</button>
+        <button *ngIf="showExport" class="text-sm px-3 py-1 rounded-md border hover:bg-slate-50" (click)="workflowService.exportJson()">Export JSON</button>
+        <button *ngIf="showSave" class="text-sm px-3 py-1 rounded-md border bg-green-50 border-green-300 hover:bg-green-100 text-green-700" (click)="saveToApi()">
           {{ getSaveButtonText() }}
         </button>
         </div>
@@ -103,26 +130,36 @@ export class WorkflowHeaderComponent {
   constructor(
     public workflowService: WorkflowDesignerService,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    @Optional() @Inject(WORKFLOW_LIB_CONFIG) public libConfig?: WorkflowDesignerLibConfig
   ) {}
 
+  // Feature flag helpers (default true when not provided)
+  get showNew() { return this.libConfig?.features?.new ?? true; }
+  get showTemplates() { return this.libConfig?.features?.templates ?? true; }
+  get showImport() { return this.libConfig?.features?.import ?? true; }
+  get showExport() { return this.libConfig?.features?.export ?? true; }
+  get showSave() { return this.libConfig?.features?.save ?? true; }
+  get showWorkflowList() { return this.libConfig?.features?.workflowList ?? false; }
+  get showBack() { return this.libConfig?.features?.backButton ?? true; }
+
+  // Workflows dropdown state (signals for zoneless change detection)
+  showWorkflowsDropdown = signal<boolean>(false);
+  loadingWorkflows = signal<boolean>(false);
+  workflows = signal<ApiWorkflow[]>([]);
+
   goBackToList() {
-    this.router.navigate(['/']);
+    const backUrl = this.libConfig?.features?.backUrl ?? '/';
+    // If an absolute URL is provided, fall back to full redirect
+    if (/^https?:\/\//i.test(backUrl)) {
+      window.location.href = backUrl;
+      return;
+    }
+    this.router.navigate([backUrl]);
   }
 
   async selectTemplate(id: string) {
     try {
-      const loaded = await this.workflowService.loadWorkflow(id);
-      if (!loaded) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Load Failed',
-          detail: 'Unable to load workflow template.',
-          life: 4000
-        });
-        return;
-      }
-
       this.router.navigate(['/'], {
         queryParams: { id },
         replaceUrl: true
@@ -140,6 +177,52 @@ export class WorkflowHeaderComponent {
       });
     }
   }
+
+  async toggleWorkflowsDropdown() {
+    this.showWorkflowsDropdown.update(v => !v);
+    if (this.showWorkflowsDropdown()) {
+      // Close templates dropdown if open
+      this.workflowService.showTemplatesDropdown.set(false);
+      // show loading immediately
+      this.loadingWorkflows.set(true);
+      await this.loadWorkflows();
+    }
+  }
+
+  private async loadWorkflows() {
+    this.loadingWorkflows.set(true);
+    try {
+      const list = await this.workflowService.getAllWorkflows();
+      this.workflows.set(list);
+    } catch (e) {
+      console.error('Error loading workflows list:', e);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load workflows list.',
+        life: 4000
+      });
+    } finally {
+      this.loadingWorkflows.set(false);
+    }
+  }
+
+  async selectWorkflow(id: string) {
+    try {
+      this.router.navigate(['/'], { queryParams: { id }, replaceUrl: true });
+      this.showWorkflowsDropdown.set(false);
+    } catch (error) {
+      console.error('Error loading workflow:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Unexpected error loading workflow.',
+        life: 5000
+      });
+    }
+  }
+
+  trackWorkflow = (index: number, wf: ApiWorkflow) => wf.workflowId;
 
   async saveToApi() {
     const result = await this.workflowService.saveToApi();

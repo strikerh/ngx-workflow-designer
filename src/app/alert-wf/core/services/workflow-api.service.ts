@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../workflow-lib.config';
 
 export interface ApiWorkflow {
   workflowId: number;
@@ -57,13 +58,27 @@ export interface WorkflowQueryParams {
 })
 export class WorkflowApiService {
 
-  private readonly workflowEndpoint = (environment.workflowApiUrl +'/workflow'|| 'http://localhost:3001/api/workflow').replace(/\/$/, '');
-  private readonly headers = environment.workflowApiToken
-    ? new HttpHeaders({ Authorization: environment.workflowApiToken })
-    : undefined;
+  private workflowEndpoint: string;
+  private templatesEndpoint: string;
+  private headers: HttpHeaders | undefined;
 
-  constructor(private http: HttpClient) {
-    console.log('WorkflowApiService initialized with baseUrl:', environment.workflowApiUrl );
+  constructor(
+    private http: HttpClient,
+    @Optional() @Inject(WORKFLOW_LIB_CONFIG) private libConfig?: WorkflowDesignerLibConfig
+  ) {
+    const baseFromConfig = this.libConfig?.api?.baseUrl;
+    const tokenFromConfig = this.libConfig?.api?.token;
+
+  const base = (baseFromConfig || (environment.workflowApiUrl + '/workflow') || 'http://localhost:3001/api/workflow').replace(/\/$/, '');
+  this.workflowEndpoint = base;
+  // templates endpoint can be different; fallback to base
+  const templatesFromConfig = this.libConfig?.api?.templatesUrl;
+  this.templatesEndpoint = (templatesFromConfig || base).replace(/\/$/, '');
+
+    const token = tokenFromConfig || environment.workflowApiToken;
+    this.headers = token ? new HttpHeaders({ Authorization: token }) : undefined;
+
+    console.log('WorkflowApiService initialized with baseUrl:', this.workflowEndpoint);
   }
 
   /**
@@ -127,8 +142,14 @@ export class WorkflowApiService {
    * Get workflow templates (same as getWorkflows but for templates)
    */
   getTemplates(): Observable<ApiWorkflow[]> {
-    return this.getWorkflows({ limit: 100 }).pipe(
-      map(response => response.results || [])
+    return this.http.get<ApiResponse<any>>(this.templatesEndpoint, { headers: this.headers }).pipe(
+      map((response) => {
+        const res = response?.results as any;
+        if (!res) return [] as ApiWorkflow[];
+        // Support two shapes: results is array OR object with data array
+        const list = Array.isArray(res) ? res : Array.isArray((res as any).data) ? (res as any).data : [];
+        return list as ApiWorkflow[];
+      })
     );
   }
 }
