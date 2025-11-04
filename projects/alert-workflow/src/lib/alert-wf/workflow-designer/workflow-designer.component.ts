@@ -10,7 +10,7 @@ import { WorkflowValidationDialogComponent } from './components/workflow-validat
 import { WorkflowDesignerService } from './workflow-designer.service';
 
 @Component({
-  selector: 'app-workflow-designer',
+  selector: 'workflow-designer',
   standalone: true,
   imports: [
     CommonModule,

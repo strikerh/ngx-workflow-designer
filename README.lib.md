@@ -60,7 +60,9 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-2) Route to the component:
+2) Use the component
+
+Option A — Route to the component:
 
 ```ts
 export const routes = [
@@ -72,6 +74,21 @@ export const routes = [
 ```
 
 That’s it—the component renders with the configured API and features.
+
+Option B — Use as a tag in a host template (standalone import):
+
+```ts
+import { Component } from '@angular/core';
+import { WorkflowDesignerComponent } from '@quexlo/alert-workflow';
+
+@Component({
+  selector: 'app-page',
+  standalone: true,
+  imports: [WorkflowDesignerComponent],
+  template: `<workflow-designer></workflow-designer>`
+})
+export class PageComponent {}
+```
 
 ### Using environment variables
 

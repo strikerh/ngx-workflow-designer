@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('@quexlo/alert-workflow').then(m => m.WorkflowDesignerComponent)
+    loadComponent: () => import('./pages/workflow-page.component').then(m => m.WorkflowPageComponent)
   },
   {
     path: 'workflow-designer',
