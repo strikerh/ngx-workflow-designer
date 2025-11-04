@@ -30,7 +30,7 @@ export const appConfig: ApplicationConfig = {
         token: environment.workflowApiToken
       },
       features: {
-        import: false,
+        import: true,
         export: true,
         new: true,
         templates: true,

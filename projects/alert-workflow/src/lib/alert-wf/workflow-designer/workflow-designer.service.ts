@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, Optional } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -101,7 +101,7 @@ export class WorkflowDesignerService {
     private configService: WorkflowNodesConfigService,
     private variablesService: WorkflowVariablesService,
     private specialMarkersService: SpecialMarkersService,
-    private router: Router,
+    @Optional() private router: Router | null,
   ) {
     this.setupMouseListeners();
     this.loadTemplateIds();
@@ -841,7 +841,10 @@ export class WorkflowDesignerService {
           const workflow = (response.results as any).data || response.results;
           this.currentWorkflowId.set(workflow.workflowId.toString());
           this.currentWorkflow.set(workflow);
-          this.router.navigate(['/'], { queryParams: { id: workflow.workflowId }, replaceUrl: true });
+          // Update URL if router is available
+          if (this.router) {
+            this.router.navigate(['/'], { queryParams: { id: workflow.workflowId }, replaceUrl: true });
+          }
         }
         return response.errors.length === 0;
       }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal, Optional, Inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -24,29 +24,66 @@ import { WorkflowDesignerService } from './workflow-designer.service';
   styleUrls: ['./workflow-designer.component.css'],
 })
 export class WorkflowDesignerComponent implements OnInit, OnDestroy {
+  @Input() workflowId?: string;
+  
   private destroy$ = new Subject<void>();
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
+    @Optional() private route: ActivatedRoute | null,
+    @Optional() private router: Router | null,
     public workflowService: WorkflowDesignerService,
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((queryParams) => {
-      const workflowId = queryParams['id'];
+    console.log('🔵 WorkflowDesigner ngOnInit');
+    console.log('🔵 Input workflowId:', this.workflowId);
+    console.log('🔵 ActivatedRoute:', this.route);
+    console.log('🔵 Router:', this.router);
+    
+    // Support for Input workflowId (when used without router)
+    if (this.workflowId) {
+      console.log('🔵 Loading workflow from @Input');
+      this.loadWorkflow(this.workflowId);
+      return;
+    }
 
+    // Support for route-based loading (when used with router)
+    if (this.route) {
+      console.log('🔵 Subscribing to route query params');
+      this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((queryParams) => {
+        console.log('🔵 Query params changed:', queryParams);
+        const workflowId = queryParams['id'];
+
+        if (workflowId && workflowId !== 'new') {
+          console.log('🔵 Loading workflow from query param:', workflowId);
+          this.loadWorkflow(workflowId);
+        } else {
+          console.log('🔵 No workflow ID or new workflow, resetting');
+          this.error.set(null);
+          this.loading.set(false);
+          this.workflowService.resetAll();
+          this.workflowService.saveStateToHistory();
+        }
+      });
+    } else {
+      console.log('🔵 No route, checking URL manually for query params');
+      // No router - try to parse URL query params manually
+      const urlParams = new URLSearchParams(window.location.search);
+      const workflowId = urlParams.get('id');
+      
       if (workflowId && workflowId !== 'new') {
+        console.log('🔵 Loading workflow from manual URL parse:', workflowId);
         this.loadWorkflow(workflowId);
       } else {
+        console.log('🔵 No workflow ID in URL, initializing empty workflow');
         this.error.set(null);
         this.loading.set(false);
         this.workflowService.resetAll();
         this.workflowService.saveStateToHistory();
       }
-    });
+    }
   }
 
   ngOnDestroy() {
@@ -72,7 +109,9 @@ export class WorkflowDesignerComponent implements OnInit, OnDestroy {
   }
 
   goBackToList() {
-    this.router.navigate(['/']);
+    if (this.router) {
+      this.router.navigate(['/']);
+    }
   }
 
   @HostListener('window:keydown', ['$event'])

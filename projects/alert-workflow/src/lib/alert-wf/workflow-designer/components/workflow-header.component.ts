@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { WorkflowDesignerService } from '../workflow-designer.service';
@@ -118,7 +118,7 @@ export class WorkflowHeaderComponent {
 
   constructor(
     public workflowService: WorkflowDesignerService,
-    private router: Router,
+    @Optional() private router: Router | null,
     private messageService: MessageService,
   ) {}
 
@@ -142,17 +142,48 @@ export class WorkflowHeaderComponent {
       window.location.href = backUrl;
       return;
     }
-    this.router.navigate([backUrl]);
+    if (this.router) {
+      this.router.navigate([backUrl]);
+    }
   }
 
   async selectTemplate(id: string) {
     try {
-      this.router.navigate(['/'], {
-        queryParams: { id },
-        replaceUrl: true
-      });
+      console.log('Selecting template:', id);
       
+      // Close dropdown first
       this.workflowService.showTemplatesDropdown.set(false);
+      
+      // Check if router has any configured routes
+      const hasRoutes = this.router && this.router.config && this.router.config.length > 0;
+      
+      // If router is available AND has routes, navigate with query params
+      if (hasRoutes) {
+        console.log('Using router to navigate');
+        this.router!.navigate(['/'], {
+          queryParams: { id },
+          replaceUrl: true
+        });
+      } else {
+        // If no router or no routes, directly load the workflow
+        console.log('Loading template directly');
+        const success = await this.workflowService.loadWorkflow(id);
+        if (!success) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load template.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Template loaded successfully.',
+            life: 2000
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading template:', error);
       this.messageService.add({
@@ -192,11 +223,45 @@ export class WorkflowHeaderComponent {
   }
 
   async selectWorkflow(id: string) {
+    console.log('🔴 selectWorkflow called with id:', id);
+    console.log('🔴 Router is:', this.router);
+    console.log('🔴 Router is null?', this.router === null);
+    
     try {
-      this.router.navigate(['/'], { queryParams: { id }, replaceUrl: true });
+      // Close dropdown first
       this.showWorkflowsDropdown.set(false);
+      
+      // Check if router has any configured routes
+      const hasRoutes = this.router && this.router.config && this.router.config.length > 0;
+      console.log('🔴 Router has routes?', hasRoutes);
+      
+      // If router is available AND has routes, navigate with query params
+      if (hasRoutes) {
+        console.log('Using router to navigate');
+        this.router!.navigate(['/'], { queryParams: { id }, replaceUrl: true });
+      } else {
+        // If no router or no routes, directly load the workflow
+        console.log('🟢 Loading workflow directly WITHOUT router navigation');
+        const success = await this.workflowService.loadWorkflow(id);
+        console.log('🟢 Load result:', success);
+        if (!success) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load workflow.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Workflow loaded successfully.',
+            life: 2000
+          });
+        }
+      }
     } catch (error) {
-      console.error('Error loading workflow:', error);
+      console.error('❌ Error loading workflow:', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -254,7 +319,15 @@ export class WorkflowHeaderComponent {
   }
 
   createNewWorkflow() {
-    this.router.navigate(['/'], { queryParams: { id: 'new' } });
+    const hasRoutes = this.router && this.router.config && this.router.config.length > 0;
+    
+    if (hasRoutes) {
+      this.router!.navigate(['/'], { queryParams: { id: 'new' } });
+    } else {
+      // If no router or no routes, reset to create new workflow
+      this.workflowService.resetAll();
+      this.workflowService.saveStateToHistory();
+    }
   }
 
   importJson() {
