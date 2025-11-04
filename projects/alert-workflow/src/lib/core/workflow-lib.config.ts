@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import type { PaletteCategoryConfig } from '../workflow-designer/workflow-designer.interfaces';
+import type { PaletteCategoryConfig, NodeTypeConfig } from '../workflow-designer/workflow-designer.interfaces';
 
 export interface WorkflowDesignerFeatureFlags {
   import: boolean;
@@ -29,6 +29,12 @@ export interface WorkflowDesignerLibConfig {
   nodesConfig?: WorkflowNodesConfigOptions;
   palette?: {
     categories?: PaletteCategoryConfig[];
+    /**
+     * Optional: Provide node type configurations directly from the host app.
+     * If provided, these take precedence over JSON/TS defaults and will be
+     * merged with WORKFLOW_NODE_TYPES (if any) by type.
+     */
+    nodeTypes?: NodeTypeConfig[];
   };
 }
 

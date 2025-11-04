@@ -37,30 +37,20 @@ export class WorkflowDesignerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log('🔵 WorkflowDesigner ngOnInit');
-    console.log('🔵 Input workflowId:', this.workflowId);
-    console.log('🔵 ActivatedRoute:', this.route);
-    console.log('🔵 Router:', this.router);
-    
     // Support for Input workflowId (when used without router)
     if (this.workflowId) {
-      console.log('🔵 Loading workflow from @Input');
       this.loadWorkflow(this.workflowId);
       return;
     }
 
     // Support for route-based loading (when used with router)
     if (this.route) {
-      console.log('🔵 Subscribing to route query params');
       this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((queryParams) => {
-        console.log('🔵 Query params changed:', queryParams);
         const workflowId = queryParams['id'];
 
         if (workflowId && workflowId !== 'new') {
-          console.log('🔵 Loading workflow from query param:', workflowId);
           this.loadWorkflow(workflowId);
         } else {
-          console.log('🔵 No workflow ID or new workflow, resetting');
           this.error.set(null);
           this.loading.set(false);
           this.workflowService.resetAll();
@@ -68,16 +58,13 @@ export class WorkflowDesignerComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      console.log('🔵 No route, checking URL manually for query params');
       // No router - try to parse URL query params manually
       const urlParams = new URLSearchParams(window.location.search);
       const workflowId = urlParams.get('id');
       
       if (workflowId && workflowId !== 'new') {
-        console.log('🔵 Loading workflow from manual URL parse:', workflowId);
         this.loadWorkflow(workflowId);
       } else {
-        console.log('🔵 No workflow ID in URL, initializing empty workflow');
         this.error.set(null);
         this.loading.set(false);
         this.workflowService.resetAll();

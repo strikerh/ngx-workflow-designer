@@ -5,8 +5,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
 
-import { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from '@quexlo/alert-workflow';
+import { provideAlertWorkflow, WorkflowDesignerLibConfig } from '@quexlo/alert-workflow';
 import { environment } from '../environments/environment';
+import { PALETTE_CATEGORIES, WORKFLOW_NODES_CONFIG } from './workflow-nodes-config.data';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,7 +41,8 @@ export const appConfig: ApplicationConfig = {
         backUrl: '/'
       },
       palette: {
-        categories: PALETTE_CATEGORIES
+        categories: PALETTE_CATEGORIES,
+        nodeTypes: WORKFLOW_NODES_CONFIG
       }
     }),
     ConfirmationService,

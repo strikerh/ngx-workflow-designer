@@ -22,6 +22,14 @@ export class WorkflowNodesConfigService {
   private async loadConfiguration(): Promise<void> {
     const source = (this.libConfig as any)?.nodesConfig?.source as 'ts' | 'json' | undefined;
     const jsonUrl = (this.libConfig as any)?.nodesConfig?.jsonUrl as string | undefined;
+    const providedNodeTypes = (this.libConfig as any)?.palette?.nodeTypes as NodeTypeConfig[] | undefined;
+
+    // Highest precedence: node types provided directly via lib config (palette.nodeTypes)
+    if (Array.isArray(providedNodeTypes) && providedNodeTypes.length > 0) {
+      this.nodeTypesConfig.set(this.mergeWithExtraTypes(providedNodeTypes));
+      this.configLoaded.set(true);
+      return;
+    }
 
     if (source === 'json' && jsonUrl) {
       try {

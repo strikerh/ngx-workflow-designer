@@ -149,8 +149,6 @@ export class WorkflowHeaderComponent {
 
   async selectTemplate(id: string) {
     try {
-      console.log('Selecting template:', id);
-      
       // Close dropdown first
       this.workflowService.showTemplatesDropdown.set(false);
       
@@ -159,14 +157,12 @@ export class WorkflowHeaderComponent {
       
       // If router is available AND has routes, navigate with query params
       if (hasRoutes) {
-        console.log('Using router to navigate');
         this.router!.navigate(['/'], {
           queryParams: { id },
           replaceUrl: true
         });
       } else {
         // If no router or no routes, directly load the workflow
-        console.log('Loading template directly');
         const success = await this.workflowService.loadWorkflow(id);
         if (!success) {
           this.messageService.add({
@@ -223,27 +219,19 @@ export class WorkflowHeaderComponent {
   }
 
   async selectWorkflow(id: string) {
-    console.log('🔴 selectWorkflow called with id:', id);
-    console.log('🔴 Router is:', this.router);
-    console.log('🔴 Router is null?', this.router === null);
-    
     try {
       // Close dropdown first
       this.showWorkflowsDropdown.set(false);
       
       // Check if router has any configured routes
       const hasRoutes = this.router && this.router.config && this.router.config.length > 0;
-      console.log('🔴 Router has routes?', hasRoutes);
       
       // If router is available AND has routes, navigate with query params
       if (hasRoutes) {
-        console.log('Using router to navigate');
         this.router!.navigate(['/'], { queryParams: { id }, replaceUrl: true });
       } else {
         // If no router or no routes, directly load the workflow
-        console.log('🟢 Loading workflow directly WITHOUT router navigation');
         const success = await this.workflowService.loadWorkflow(id);
-        console.log('🟢 Load result:', success);
         if (!success) {
           this.messageService.add({
             severity: 'error',
@@ -261,7 +249,7 @@ export class WorkflowHeaderComponent {
         }
       }
     } catch (error) {
-      console.error('❌ Error loading workflow:', error);
+      console.error('Error loading workflow:', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
