@@ -9,6 +9,7 @@ export interface WorkflowNode {
   id: string;
   type: string;
   label: string;
+  description?: string;
   x: number;
   y: number;
   params: Record<string, any>;
@@ -147,6 +148,8 @@ export interface NodeFieldConfig<T = any> {
   icon?: string; // Icon to display - emoji (e.g., '📋', '👤') or HTML markup (e.g., '<i class="fa fa-user"></i>', '<svg>...</svg>')
   default?: any;
   readonly?: boolean; // Make field read-only (user cannot edit). Useful for auto-generated values like UUIDs.
+  // Show this field value in the node's compact summary (node card)
+  showInNode?: boolean;
   
   // Type-specific options (generic)
   options?: T;

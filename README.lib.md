@@ -33,6 +33,7 @@ Visual workflow designer with drag-and-drop nodes, connection management, valida
 - [API Reference](#api-reference)```
 
 - [Node Configuration](#node-configuration)
+  - [How to build WORKFLOW_NODES_CONFIG](#how-to-build-workflow_nodes_config)
 
 - [Styling](#styling)In external hosts, publish the lib and install it, then import from `@quexlo/alert-workflow`.
 
@@ -572,6 +573,196 @@ const customNodes: NodeTypeConfig[] = [
     ]
   }
 ];
+      ### How to build WORKFLOW_NODES_CONFIG
+
+      This section explains how to define your own node types with full control over fields, exits, visuals, and categorization.
+
+      #### 1) Define palette categories
+
+      Categories control how nodes are grouped in the left palette. The `filterPrefix` matches your node `type` prefixes.
+
+      ```ts
+      import { PaletteCategoryConfig } from '@quexlo/alert-workflow';
+
+      export const PALETTE_CATEGORIES: PaletteCategoryConfig[] = [
+        { id: 'triggers',  label: 'Triggers',  icon: '⚡', headerClass: 'text-amber-700',  filterPrefix: 'trigger.' },
+        { id: 'controls',  label: 'Controls',  icon: '🧭', headerClass: 'text-sky-700',    filterPrefix: 'control.' },
+        { id: 'actions',   label: 'Actions',   icon: '🎯', headerClass: 'text-emerald-700', filterPrefix: 'action.' },
+        { id: 'terminals', label: 'Terminals', icon: '⛔', headerClass: 'text-slate-700',   filterPrefix: 'end.' },
+        { id: 'utility',   label: 'Utility',   icon: '🔧', headerClass: 'text-purple-700',  filterPrefix: ['var.', 'audit.', 'utility.'] },
+      ];
+      ```
+
+      Notes:
+      - Use `filterPrefix` to match types like `trigger.manual`, `action.http`, etc.
+      - `headerClass` uses Tailwind classes for palette section color.
+
+      #### 2) Define node type configs
+
+      Each node type object describes how it looks, what fields it exposes, and what exits it has.
+
+      ```ts
+      import { NodeTypeConfig } from '@quexlo/alert-workflow';
+
+      export const WORKFLOW_NODES_CONFIG: NodeTypeConfig[] = [
+        {
+          type: 'trigger.manual',                 // Unique type. Convention: '<category>.<name>'
+          category: 'trigger',                    // One of: 'trigger' | 'control' | 'action' | 'terminal' | 'utility'
+          label: 'Manual Trigger',                // Display label (palette + node header)
+          description: 'Start workflow manually',
+          icon: "<span class='material-icons'>play_arrow</span>", // Emoji or HTML (i, span, svg)
+          color: 'bg-amber-100 border-amber-300 text-amber-800',  // Palette chip color (Tailwind classes)
+          nodeColor: 'bg-amber-50 border-amber-200',              // Node body color (Tailwind classes)
+          properties: [
+            { key: 'label', label: 'Trigger Name', type: 'text', required: true, default: 'Manual Trigger' }
+          ],
+          exits: ['next']                          // Output connectors (used when connecting edges)
+        },
+        {
+          type: 'control.if',
+          category: 'control',
+          label: 'If / Else',
+          description: 'Conditional branching based on expression',
+          icon: "<span class='material-icons'>call_split</span>",
+          color: 'bg-sky-100 border-sky-300 text-sky-800',
+          nodeColor: 'bg-sky-50 border-sky-200',
+          properties: [
+            { key: 'condition', label: 'Condition', type: 'text', required: true, placeholder: 'a > b' }
+          ],
+          exits: ['onTrue', 'onFalse']
+        },
+        {
+          type: 'action.sms',
+          category: 'action',
+          label: 'SMS',
+          description: 'Send SMS to recipients',
+          icon: "<span class='material-icons'>sms</span>",
+          color: 'bg-emerald-100 border-emerald-300 text-emerald-800',
+          nodeColor: 'bg-emerald-50 border-emerald-200',
+          properties: [
+            { key: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Alert message' }
+          ],
+          exits: ['onSuccess', 'onFailure']
+        },
+        {
+          type: 'end.terminate',
+          category: 'terminal',
+          label: 'End',
+          description: 'Terminate workflow',
+          icon: "<span class='material-icons'>stop</span>",
+          color: 'bg-slate-100 border-slate-300 text-slate-800',
+          nodeColor: 'bg-slate-50 border-slate-200',
+          properties: [],
+          exits: []
+        }
+      ];
+      ```
+
+      #### 3) Field configuration (properties)
+
+      Fields render in the Inspector panel based on `type` and options. Supported types:
+
+      - `text` | `number` | `textarea` — basic inputs
+      - `select` — dropdown with static options (string[])
+      - `switch-cases` — adds/editable list of string cases (useful for switch nodes)
+
+      Field shape:
+
+      ```ts
+      interface NodeFieldConfig<T = any> {
+        key: string;                              // Param key stored under node.params[key]
+        label: string;                            // Display label
+        type: 'text' | 'number' | 'textarea' | 'select' | 'switch-cases';
+        required?: boolean;
+        placeholder?: string;
+        help?: string;                            // Small help text under the field
+        default?: any;                            // Default value on node creation
+        showInNode?: boolean;                     // If true, this field's value is shown as the node's compact summary (first true wins)
+        options?: T;                              // For select or specialized fields
+        showIf?: {                                // Optional conditional visibility
+          watchField: string;
+          operator: 'equals' | 'notEquals' | 'includes' | 'notIncludes' | 'greaterThan' | 'lessThan';
+          value: any;
+        } | Array<...>;                           // Multiple conditions (AND)
+      }
+      ```
+
+      Dynamic node summary:
+
+  - The designer renders a compact summary inside each node using the first property that has `showInNode: true`.
+  - If no property sets `showInNode`, the fallback shows the first non-`label` param as `key: value` (truncated). If no params exist, it shows the node label.
+  - Keep the value concise; long text will be truncated in the node box.
+
+      Example:
+
+      ```ts
+      {
+        type: 'action.sms',
+        // ...
+        properties: [
+          { key: 'message', label: 'Message', type: 'textarea', required: true, showInNode: true }
+        ]
+      }
+      ```
+
+      Select options (static):
+
+      ```ts
+      { key: 'status', label: 'Status', type: 'select', options: ['Open', 'Closed', 'Pending'] }
+      ```
+
+      Switch cases:
+
+      ```ts
+      { key: 'cases', label: 'Cases', type: 'switch-cases', help: 'Define case values' }
+      ```
+
+      Advanced (interfaces available):
+
+      - `GenericSelectorOptions` and `DynamicSelectOptions` are defined for more advanced selectors and dynamic lists. The default Inspector renders static `select` options and `switch-cases`. If you need advanced selectors, you can extend or replace the inspector component.
+
+      #### 4) Exits
+
+      `exits` define connection points (output ports) for a node. Common patterns:
+
+      - Single path: `['next']`
+      - Conditional: `['onTrue', 'onFalse']`
+      - Success/Failure: `['onSuccess', 'onFailure']`
+
+      Make sure your business logic recognizes these names when interpreting the graph.
+
+      #### 5) Icons and colors
+
+      - `icon`: You can use emoji (e.g., '⚡') or HTML snippets (e.g., `<span class="material-icons">sms</span>`)
+      - `color`: Tailwind classes for palette chips (text/border/background)
+      - `nodeColor`: Tailwind classes for node body
+
+      #### 6) Wire it into the library
+
+      Provide your config via the library provider:
+
+      ```ts
+      import { PALETTE_CATEGORIES, WORKFLOW_NODES_CONFIG } from './workflow-nodes-config.data';
+
+      ...provideAlertWorkflow({
+        // ... other config
+        palette: {
+          categories: PALETTE_CATEGORIES,
+          nodeTypes: WORKFLOW_NODES_CONFIG   // <- use your custom nodes here
+        }
+      })
+      ```
+
+      Alternatively, you can provide additional types via the `WORKFLOW_NODE_TYPES` token to merge/override by `type`.
+
+      #### Validation checklist
+
+      - Each node `type` is unique and follows the `<category>.<name>` convention
+      - `category` matches one of the allowed categories and palette filters
+      - `exits` cover your intended connection points
+      - Field `key`s are unique per node and align with your backend schema
+      - Colors use valid Tailwind classes
+
 
 ...provideAlertWorkflow({
   // ... other config

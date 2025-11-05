@@ -940,67 +940,32 @@ export class WorkflowDesignerService {
 
   renderSummary(node: WorkflowNode): string {
     try {
-      switch (node.type) {
-        case 'trigger.manual':
-          return node.params?.['initiator'] ? `by: ${node.params['initiator']}` : 'operator-initiated';
-        case 'trigger.webhook':
-          return `auth: ${node.params?.['auth'] || 'none'}`;
-        case 'trigger.schedule':
-          return `cron: ${node.params?.['cron'] || '-'}`;
-        case 'trigger.threshold':
-          return `${node.params?.['metric'] || '-'} ${node.params?.['operator'] || '>'} ${node.params?.['value'] || '-'}`;
-        case 'control.if':
-          return `cond: ${node.params?.['condition'] || '-'}`;
-        case 'control.switch':
-          return `expr: ${node.params?.['expression'] || '-'}`;
-        case 'control.rateLimit':
-          return `max: ${node.params?.['max'] || '-'} per ${node.params?.['per'] || '-'}`;
-        case 'control.wait':
-          return node.params?.['seconds'] ? `wait: ${node.params['seconds']}s` : `until: ${node.params?.['until'] || '-'}`;
-        case 'control.approval':
-          return `role: ${node.params?.['role'] || '-'} | SLA: ${node.params?.['slaMinutes'] || '-'}m`;
-        case 'control.forEach':
-          return `each: ${node.params?.['collection'] || '-'} as ${node.params?.['itemAlias'] || 'item'}`;
-        case 'control.parallel':
-          return `branches: ${node.params?.['branches']?.length || 0}`;
-        case 'control.merge':
-          return `await: ${node.params?.['await'] || 'all'}`;
-        case 'control.transform':
-          const setKeys = node.params?.['set'] ? Object.keys(node.params['set']).join(', ') : '-';
-          return `set: ${setKeys}`;
-        case 'control.dedupe':
-          return `key: ${node.params?.['key'] || '-'} | window: ${node.params?.['window'] || '-'}`;
-        case 'action.sms':
-          return `to: ${node.params?.['to'] || '-'}`;
-        case 'action.push':
-          return `to: ${node.params?.['to'] || '-'} | title: ${node.params?.['title'] || '-'}`;
-        case 'action.email':
-          return `to: ${node.params?.['to'] || '-'} | subj: ${node.params?.['subject'] || '-'}`;
-        case 'action.paging':
-          return `to: ${node.params?.['to'] || '-'}`;
-        case 'action.pa':
-          return `zone: ${node.params?.['zone'] || '-'} | tone: ${node.params?.['tone'] || node.params?.['file'] || '-'}`;
-        case 'action.ivr':
-          return `to: ${node.params?.['to'] || '-'} | prompt: ${node.params?.['prompt'] || '-'}`;
-        case 'action.conference':
-          return `participants: ${node.params?.['participants'] || '-'}`;
-        case 'action.webhook':
-          return `${node.params?.['method'] || 'POST'} ${node.params?.['url'] || '(url)'}`;
-        case 'action.ticket':
-          return `${node.params?.['system'] || '-'} | ${node.params?.['project'] || '-'}`;
-        case 'action.log':
-          return `${node.params?.['level'] || 'Info'}: ${node.params?.['message'] || '-'}`;
-        case 'end.terminate':
-          return 'success';
-        case 'end.fail':
-          return `reason: ${node.params?.['reason'] || 'unknown'}`;
-        case 'var.set':
-          return `${node.params?.['key'] || '-'} = ${node.params?.['value'] || '-'}`;
-        case 'audit.mark':
-          return `${node.params?.['tag'] || '-'}: ${node.params?.['note'] || '-'}`;
-        default:
-          return node.type;
+      // 1) Dynamic summary from node type config: look for first field marked showInNode
+      const cfg = this.configService.getNodeTypeConfig(node.type);
+      if (cfg && Array.isArray(cfg.properties)) {
+        const field = cfg.properties.find((p: any) => p && (p as any).showInNode === true) as any;
+        if (field && field.key) {
+          const raw = node.params?.[field.key];
+          if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
+            const val = typeof raw === 'object' ? JSON.stringify(raw) : String(raw);
+            // Truncate to keep node compact
+            const short = val.length > 40 ? val.slice(0, 37) + '…' : val;
+            return `<b>${field.label || field.key}</b>: ${short}`;
+          }
+        }
       }
+
+      // 2) Smarter generic fallback when no showInNode field is configured
+      // Prefer the first param (excluding 'label') with a non-empty value; else use the node label
+      const params = node.params || {};
+      const firstEntry = Object.entries(params).find(([k, v]) => k !== 'label' && v !== undefined && v !== null && String(v).trim() !== '');
+      if (firstEntry) {
+        const [k, v] = firstEntry;
+        const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        const short = val.length > 40 ? val.slice(0, 37) + '…' : val;
+        return `<b>${k}</b>: ${short}`;
+      } 
+      return node.label || node.type;
     } catch {
       return node.type;
     }

@@ -63,7 +63,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
                [class.ring-2]="isOutputPointActive(exit)"
                [class.ring-indigo-300]="isOutputPointActive(exit)"
                [class.scale-110]="isOutputPointActive(exit)">
-          </div>
+          </div> 
           <!-- Label for exit point (only visible when multiple exits) -->
           @if (nodeExits().length > 1 && !isOutputPointDisabled()) {
             <span class="absolute right-full mr-2 top-1/2 -translate-y-1/2 
@@ -85,8 +85,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
           }
           <span class="font-medium text-sm line-clamp-1">{{ node.label }}</span>
         </div>
-        <div class="text-[11px] text-slate-600 mt-1 truncate">
-          {{ workflowService.renderSummary(node) }}
+        <div class="text-[11px] text-slate-600 mt-1 truncate" [innerHTML]="workflowService.renderSummary(node) ">
         </div>
         <div class="mt-auto flex items-center justify-between text-[11px] text-slate-500">
           <span>ID: {{ node.id.slice(-4) }}</span>
