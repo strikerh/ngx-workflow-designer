@@ -109,7 +109,13 @@ import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workf
   `,
   styles: [`
   :host{
-      @apply col-span-3 row-[1]   flex items-center justify-between px-3;
+      grid-column: span 3;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
   }
   `]
 })

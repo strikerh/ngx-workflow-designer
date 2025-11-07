@@ -13,15 +13,15 @@ This is a **dual-mode monorepo**:
 ## Build, Run, Test
 
 ```bash
-npm start              # Dev server (port 4444, not 4200!)
+npm start              # Dev server (port 4444, not 4200!) - Windows: uses 'pwsh.exe' shell
 npm run build          # Build demo app
-npm test               # Run Karma tests
+npm test               # Run Karma tests (background task available in VS Code)
 npm run build:lib      # Build library to dist/alert-workflow/
 npm run pack:lib       # Create tarball after build:lib
 npm run publish:lib    # Publish to npm (requires build:lib first)
 ```
 
-**Port 4444** is hardcoded in `package.json` scripts. Don't use `ng serve` directly.
+**Port 4444** is hardcoded in `package.json` scripts. Don't use `ng serve` directly. Dev server task available via VS Code's "Run Task" menu.
 
 ## Architecture Patterns (Required Reading)
 
@@ -40,18 +40,23 @@ selectedNode = computed(() => this.nodes().find(n => n.id === this.selectedNodeI
 2. Call `this.historyService.saveState(...)` with a descriptive action
 
 ### 2. Smart/Presentational Component Split
-- **Smart** (`workflow-designer.component.ts`): Injects services, orchestrates
-- **Presentational** (`components/*`): @Input/@Output only, zero service injection
+- **Smart** (`workflow-designer.component.ts`): Injects services, orchestrates, manages lifecycle
+- **Presentational** (`components/*`): @Input/@Output only, zero service injection (except palette uses `WorkflowDesignerService` for palette data)
 
 Example from palette → designer flow:
 ```typescript
-// Palette emits
-@Output() nodeSelected = new EventEmitter<string>();
+// Node component (presentational) emits events
+@Input({ required: true }) node!: WorkflowNode;
+@Output() mouseDown = new EventEmitter<{ event: MouseEvent; nodeId: string }>();
+@Output() doubleClick = new EventEmitter<string>();
 
-// Designer handles
-onNodeSelected(type: string) {
-  this.designerService.addNode(type);  // Service mutates + saves history
+// Canvas component (smart) handles events
+onNodeMouseDown(event: { event: MouseEvent; nodeId: string }) {
+  this.workflowService.startDrag(event.nodeId, event.event);
 }
+```
+
+**Exception**: `WorkflowPaletteComponent` injects `WorkflowDesignerService` to call `addNode()` - considered acceptable for simplicity.
 ```
 
 ### 3. Configuration-Driven Node System
@@ -121,19 +126,38 @@ provideAlertWorkflow({
 
 ## Gotchas & Non-Obvious Behaviors
 
-1. **Tailwind Scope**: `tailwind.config.js` scans both `src/**` and `projects/**`. Library components use Tailwind classes directly (not scoped).
+1. **Tailwind CSS Requirements**: Library uses Tailwind utility classes in templates. Host apps MUST:
+   - Install Tailwind: `npm install -D tailwindcss postcss autoprefixer`
+   - Configure `tailwind.config.js` to scan library files:
+     ```js
+     content: [
+       './src/**/*.{html,ts}',
+       './node_modules/ngx-workflow-designer/**/*.{html,ts,mjs}'
+     ]
+     ```
+   - Add `@tailwind` directives to `styles.css`
+   
+   Component `:host` styles use plain CSS (not `@apply`) to ensure they're bundled with the library and work without PostCSS in consuming apps.
+   
+   Without Tailwind setup in host app, template utility classes will be missing (broken UI).
 
-2. **PrimeNG Theming**: Library expects host app to provide `providePrimeNG()` with Lara theme. No bundled theme CSS.
+2. **Tailwind Dev Scope**: In this monorepo, `tailwind.config.js` scans both `src/**` and `projects/**` for development. Library components use Tailwind classes directly (not scoped).
 
-3. **Zoneless Mode**: Angular 20 zoneless. All change detection via signals. No `ChangeDetectorRef` anywhere.
+3. **PrimeNG Theming**: Library expects host app to provide `providePrimeNG()` with Lara theme. No bundled theme CSS.
 
-4. **No Router Dependency**: Library works with or without `@angular/router`. Back button is optional (`features.backButton`).
+4. **Zoneless Mode**: Angular 20 zoneless. All change detection via signals. No `ChangeDetectorRef` anywhere.
 
-5. **Variable Interpolation**: `WorkflowVariablesService.interpolate(text)` replaces `{{varName}}` markers. Default variables in `DEFAULT_TEMPLATE_VARIABLES`.
+5. **No Router Dependency**: Library works with or without `@angular/router`. Back button is optional (`features.backButton`). `WorkflowDesignerComponent` accepts `@Input() workflowId?: string` for router-less usage.
 
-6. **Exit Point Routing**: Nodes can have multiple exits (`['next']`, `['onTrue', 'onFalse']`, `['case1', 'case2', 'default']`). `WorkflowEdge.exitPoint` stores which exit was connected.
+6. **Variable Interpolation**: `WorkflowVariablesService.interpolate(text)` replaces `{{varName}}` markers. Default variables in `DEFAULT_TEMPLATE_VARIABLES`.
 
-7. **Computed Properties**: `PALETTE` and `TYPE_ICONS` in `workflow-designer.service.ts` are computed from config service. Don't hardcode new node types there.
+7. **Special Markers**: `SpecialMarkersService` processes special values like `{{AUTO_GENERATE_UUID}}`, `{{CURRENT_TIMESTAMP}}`, `{{WORKFLOW_ID}}`. Used for node defaults. Check `isSpecialMarker()` and `processValue()`.
+
+8. **Exit Point Routing**: Nodes can have multiple exits (`['next']`, `['onTrue', 'onFalse']`, `['case1', 'case2', 'default']`). `WorkflowEdge.exitPoint` stores which exit was connected.
+
+9. **Computed Properties**: `PALETTE` and `TYPE_ICONS` in `workflow-designer.service.ts` are computed from config service. Don't hardcode new node types there.
+
+10. **History State Protection**: `WorkflowHistoryService.isRestoringState` flag prevents saving during undo/redo. Never bypass this mechanism.
 
 ## Testing Conventions
 
@@ -145,6 +169,7 @@ provideAlertWorkflow({
     providers: [{ provide: WORKFLOW_LIB_CONFIG, useValue: mockConfig }]
   });
   ```
+- Background test task available in VS Code: "npm: test"
 
 ## Publishing Workflow
 

@@ -57,6 +57,7 @@ export class WorkflowApiService {
   private workflowEndpoint: string;
   private templatesEndpoint: string;
   private headers: HttpHeaders | undefined;
+  private isConfigured: boolean = false;
 
   private http = inject(HttpClient);
   private libConfig = inject(WORKFLOW_LIB_CONFIG, { optional: true }) as WorkflowDesignerLibConfig | null;
@@ -66,10 +67,16 @@ export class WorkflowApiService {
     const tokenFromConfig = this.libConfig?.api?.token;
     const templatesFromConfig = this.libConfig?.api?.templatesUrl;
 
-    if (!baseFromConfig) {
-      throw new Error('WORKFLOW_LIB_CONFIG.api.baseUrl is required for WorkflowApiService');
+    // Allow empty/missing baseUrl for standalone mode (no backend)
+    if (!baseFromConfig || baseFromConfig.trim() === '') {
+      console.warn('WorkflowApiService: No baseUrl configured. API features will be disabled.');
+      this.workflowEndpoint = '';
+      this.templatesEndpoint = '';
+      this.isConfigured = false;
+      return;
     }
 
+    this.isConfigured = true;
     const base = baseFromConfig.replace(/\/$/, '');
     this.workflowEndpoint = base;
     this.templatesEndpoint = (templatesFromConfig || base).replace(/\/$/, '');
@@ -78,7 +85,19 @@ export class WorkflowApiService {
     this.headers = token ? new HttpHeaders({ Authorization: token }) : undefined;
   }
 
+  private checkConfiguration(): void {
+    if (!this.isConfigured) {
+      throw new Error('WorkflowApiService: API not configured. Set api.baseUrl in provideAlertWorkflow() or disable API-dependent features (templates, save, workflowList).');
+    }
+  }
+
+  /** Check if API is configured and available */
+  isApiConfigured(): boolean {
+    return this.isConfigured;
+  }
+
   getWorkflows(params?: WorkflowQueryParams): Observable<ApiResponse<ApiWorkflow[]>> {
+    this.checkConfiguration();
     let httpParams = new HttpParams();
     if (params) {
       if (params.page) httpParams = httpParams.set('page', params.page.toString());
@@ -94,18 +113,21 @@ export class WorkflowApiService {
   }
 
   getWorkflow(id: string | number): Observable<ApiResponse<ApiWorkflow>> {
+    this.checkConfiguration();
     return this.http.get<ApiResponse<ApiWorkflow>>(`${this.workflowEndpoint}/${id}`, {
       headers: this.headers
     });
   }
 
   createWorkflow(workflow: Omit<ApiWorkflow, 'workflowId' | 'createdAt' | 'modifiedAt' | 'isDeleted'>): Observable<ApiResponse<ApiWorkflow>> {
+    this.checkConfiguration();
     return this.http.post<ApiResponse<ApiWorkflow>>(this.workflowEndpoint, workflow, {
       headers: this.headers
     });
   }
 
   updateWorkflow(id: string | number, workflow: Partial<Omit<ApiWorkflow, 'workflowId' | 'createdAt' | 'modifiedAt' | 'isDeleted'>>): Observable<ApiResponse<ApiWorkflow>> {
+    this.checkConfiguration();
     const payload = { ...workflow, workflowId: id };
     return this.http.put<ApiResponse<ApiWorkflow>>(this.workflowEndpoint, payload, {
       headers: this.headers
@@ -113,12 +135,14 @@ export class WorkflowApiService {
   }
 
   deleteWorkflow(id: string): Observable<ApiResponse<void>> {
+    this.checkConfiguration();
     return this.http.delete<ApiResponse<void>>(`${this.workflowEndpoint}/${id}`, {
       headers: this.headers
     });
   }
 
   getTemplates(): Observable<ApiWorkflow[]> {
+    this.checkConfiguration();
     return this.http.get<ApiResponse<any>>(this.templatesEndpoint, { headers: this.headers }).pipe(
       map((response) => {
         const res = response?.results as any;

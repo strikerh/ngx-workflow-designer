@@ -26,17 +26,17 @@ export const appConfig: ApplicationConfig = {
     }),
     ...provideAlertWorkflow(<WorkflowDesignerLibConfig>{
       api: {
-        baseUrl: `${environment.workflowApiUrl}/workflow`,
-        templatesUrl: `${environment.workflowApiUrl}/workflow`,
+        baseUrl: '', // Test empty baseUrl - should not throw error now
+        templatesUrl: '',
         token: environment.workflowApiToken
       },
       features: {
         import: true,
         export: true,
         new: true,
-        templates: true,
-        save: true,
-        workflowList: true,
+        templates: false,  // Disabled - requires API
+        save: false,       // Disabled - requires API
+        workflowList: false, // Disabled - requires API
         backButton: false,
         backUrl: '/'
       },

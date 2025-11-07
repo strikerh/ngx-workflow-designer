@@ -197,7 +197,13 @@ import { WorkflowHistoryPanelComponent } from './workflow-history-panel.componen
   styles: [
     `
         :host {
-            @apply col-[2] row-[2] rounded-xl bg-white border relative overflow-hidden;
+            grid-column: 2;
+            grid-row: 2;
+            border-radius: 0.75rem;
+            background-color: white;
+            border-width: 1px;
+            position: relative;
+            overflow: hidden;
         }
     `,
   ],

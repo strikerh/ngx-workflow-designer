@@ -288,7 +288,14 @@ import { NodeFieldConfig } from '../workflow-designer.interfaces';
   `,
   styles: [`
       :host {
-          @apply col-[3] row-[2] rounded-xl bg-white border overflow-hidden flex flex-col;
+          grid-column: 3;
+          grid-row: 2;
+          border-radius: 0.75rem;
+          background-color: white;
+          border-width: 1px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
       }
     .overflow-auto::-webkit-scrollbar {
       width: 6px;

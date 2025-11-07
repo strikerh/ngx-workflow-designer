@@ -33,6 +33,8 @@
 - [Requirements](#-requirements)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
+  - [Complete Minimal Example](#complete-minimal-example)
+  - [Using Without a Backend](#using-without-a-backend)
 - [Configuration](#-configuration)
   - [Library Provider Options](#library-provider-options)
   - [Feature Flags](#feature-flags)
@@ -49,8 +51,10 @@
   - [Validation Customization](#validation-customization)
 - [API Integration](#-api-integration)
 - [Styling & Theming](#-styling--theming)
-- [Publishing to NPM](#-publishing-to-npm)
 - [Troubleshooting](#-troubleshooting)
+  - [Setup Checklist](#setup-checklist)
+  - [Common Issues](#common-issues)
+- [Changelog](#-changelog)
 - [License](#-license)
 
 ---
@@ -206,13 +210,246 @@ module.exports = {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* PrimeNG CSS variable fallbacks (required for proper theming) */
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --surface-ground: #f8f9fa;
+  --text-color: #1f2937;
+}
+```
+
+**PostCSS Configuration** (required for Tailwind):
+
+```javascript
+// postcss.config.js (create this file in your project root)
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
+};
+```
+
+---
+
+### Complete Minimal Example
+
+Here's a **complete, copy-paste ready example** with all required files:
+
+**1. Install Dependencies:**
+
+```bash
+npm install ngx-workflow-designer primeng primeicons
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+```
+
+**2. Create `postcss.config.js`:**
+
+```javascript
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
+};
+```
+
+**3. Configure `tailwind.config.js`:**
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './src/**/*.{html,ts}',
+    './node_modules/ngx-workflow-designer/**/*.{html,ts,mjs}' // ⚠️ CRITICAL: Must include library files
+  ],
+  theme: {
+    extend: {}
+  },
+  plugins: []
+};
+```
+
+**4. Update `src/styles.css`:**
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PrimeNG CSS variable fallbacks */
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --surface-ground: #f8f9fa;
+  --text-color: #1f2937;
+}
+```
+
+**5. Configure `src/app/app.config.ts`:**
+
+```typescript
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeng/themes/lara';
+import { provideAlertWorkflow, PALETTE_CATEGORIES } from 'ngx-workflow-designer';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),
+    provideHttpClient(),
+    provideAnimations(),
+    providePrimeNG({
+      theme: { preset: Lara }
+    }),
+    ...provideAlertWorkflow({
+      api: {
+        baseUrl: 'https://api.example.com/workflow' // Replace with your API
+      },
+      features: {
+        import: true,
+        export: true,
+        new: true,
+        templates: false,      // Disable if no backend
+        save: false,           // Disable if no backend
+        workflowList: false,   // Disable if no backend
+        backButton: false,
+        backUrl: '/'
+      },
+      palette: {
+        categories: PALETTE_CATEGORIES
+      }
+    })
+  ]
+};
+```
+
+**6. Update `src/app/app.component.ts`:**
+
+```typescript
+import { Component } from '@angular/core';
+import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [WorkflowDesignerComponent],
+  template: '<workflow-designer></workflow-designer>',
+  styles: [`
+    :host {
+      display: block;
+      height: 100vh;
+      width: 100vw;
+    }
+  `]
+})
+export class AppComponent {}
+```
+
+**7. Run your app:**
+
+```bash
+ng serve
+```
+
+---
+
+### Using Without a Backend
+
+If you don't have a backend API, configure the library for **standalone mode**. The library now gracefully handles missing API configuration without throwing errors:
+
+```typescript
+// src/app/app.config.ts
+...provideAlertWorkflow({
+  api: {
+    baseUrl: '' // ✅ Empty string is now allowed - library will warn but continue
+  },
+  features: {
+    import: true,       // ✅ Keep - works without backend
+    export: true,       // ✅ Keep - works without backend
+    new: true,          // ✅ Keep - works without backend
+    templates: false,   // ❌ Disable - requires backend
+    save: false,        // ❌ Disable - requires backend
+    workflowList: false // ❌ Disable - requires backend
+  },
+  palette: {
+    categories: PALETTE_CATEGORIES
+  }
+})
+```
+
+**Important**: When `baseUrl` is empty or missing:
+- A warning will be logged to console: `"WorkflowApiService: No baseUrl configured. API features will be disabled."`
+- API-dependent features (templates, save, workflowList) will throw clear errors if accessed
+- The library will continue to work normally for offline features
+
+**Features that work WITHOUT a backend:**
+- ✅ Visual workflow designer (drag & drop)
+- ✅ Node configuration and properties
+- ✅ Canvas pan/zoom
+- ✅ Undo/Redo history
+- ✅ Workflow validation
+- ✅ **Export workflow as JSON** (download to local file)
+- ✅ **Import workflow from JSON** (upload from local file)
+- ✅ Variable management
+
+**Features that REQUIRE a backend:**
+- ❌ Save workflow to server
+- ❌ Load workflow from server
+- ❌ Templates dropdown
+- ❌ Workflow list dropdown
+
+**Local Storage Alternative** (optional):
+
+You can implement local storage persistence yourself:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { WorkflowDesignerComponent, WorkflowDesignerService } from 'ngx-workflow-designer';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [WorkflowDesignerComponent],
+  template: `
+    <workflow-designer></workflow-designer>
+    <button (click)="saveToLocal()">Save to Local Storage</button>
+    <button (click)="loadFromLocal()">Load from Local Storage</button>
+  `
+})
+export class AppComponent implements OnInit {
+  constructor(private workflowService: WorkflowDesignerService) {}
+
+  ngOnInit() {
+    this.loadFromLocal();
+  }
+
+  saveToLocal() {
+    const workflow = {
+      nodes: this.workflowService.nodes(),
+      edges: this.workflowService.edges()
+    };
+    localStorage.setItem('workflow', JSON.stringify(workflow));
+    console.log('Workflow saved to local storage');
+  }
+
+  loadFromLocal() {
+    const saved = localStorage.getItem('workflow');
+    if (saved) {
+      const workflow = JSON.parse(saved);
+      this.workflowService.loadWorkflowData(workflow.nodes, workflow.edges);
+      console.log('Workflow loaded from local storage');
+    }
+  }
+}
 ```
 
 ---
 
 ## ⚙️ Configuration
-
----
 
 ## ⚙️ Configuration
 
@@ -846,15 +1083,247 @@ interface ApiWorkflow {
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-- **Styles missing?** Ensure Tailwind scans library templates and global styles import Tailwind directives. Provide a PrimeNG theme.
-- **Module not found?** Verify installation: `npm install ngx-workflow-designer`
-- **Router navigation not working?** Ensure `provideRouter()` is configured, or disable router-dependent features.
-- **Validation errors persisting?** Re-run validation: `workflowService.runValidate()`
-- **API errors?** Check CORS configuration and authentication tokens.
+### Setup Checklist
 
-See the **[Troubleshooting](#-troubleshooting)** section above for detailed solutions.
+Before reporting issues, verify your setup is complete:
+
+- [ ] ✅ **Tailwind installed**: `npm install -D tailwindcss postcss autoprefixer`
+- [ ] ✅ **PostCSS config exists**: `postcss.config.js` in project root
+- [ ] ✅ **Tailwind config scans library**: Content array includes `'./node_modules/ngx-workflow-designer/**/*.{html,ts,mjs}'`
+- [ ] ✅ **Tailwind directives in styles.css**: `@tailwind base; @tailwind components; @tailwind utilities;`
+- [ ] ✅ **CSS variables have fallbacks**: Add `:root` variables to `styles.css` (see Complete Example above)
+- [ ] ✅ **PrimeNG theme configured**: `providePrimeNG({ theme: { preset: Lara } })`
+- [ ] ✅ **HTTP client provided**: `provideHttpClient()` in app.config.ts
+- [ ] ✅ **Animations enabled**: `provideAnimations()` in app.config.ts
+- [ ] ✅ **Features disabled if no backend**: Set `templates: false, save: false, workflowList: false` if you don't have an API
+
+### Common Issues
+
+#### 🔴 **All styles are missing / UI looks broken**
+
+**Symptoms**: Library components are unstyled, transparent backgrounds, no borders
+
+**Causes & Solutions**:
+
+1. **Tailwind not scanning library files**
+   ```javascript
+   // ❌ WRONG - Missing library path
+   content: ['./src/**/*.{html,ts}']
+   
+   // ✅ CORRECT - Includes library
+   content: [
+     './src/**/*.{html,ts}',
+     './node_modules/ngx-workflow-designer/**/*.{html,ts,mjs}' // Critical!
+   ]
+   ```
+
+2. **Missing PostCSS configuration**
+   ```bash
+   # Create postcss.config.js in project root
+   echo "module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };" > postcss.config.js
+   ```
+
+3. **Missing CSS variable fallbacks**
+   ```css
+   /* Add to src/styles.css */
+   :root {
+     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+     --surface-ground: #f8f9fa;
+     --text-color: #1f2937;
+   }
+   ```
+
+4. **Tailwind directives not imported**
+   ```css
+   /* Must be in src/styles.css */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   ```
+
+---
+
+#### 🔴 **API errors on load / "Failed to fetch"**
+
+**Symptoms**: Console errors about network requests, empty dropdowns
+
+**Solution**: Disable API-dependent features if you don't have a backend:
+
+```typescript
+provideAlertWorkflow({
+  api: {
+    baseUrl: '' // Can be empty if features are disabled
+  },
+  features: {
+    templates: false,      // ❌ Requires API
+    save: false,           // ❌ Requires API
+    workflowList: false,   // ❌ Requires API
+    import: true,          // ✅ Works offline
+    export: true           // ✅ Works offline
+  }
+})
+```
+
+---
+
+#### 🔴 **Transparent or white background**
+
+**Symptoms**: Canvas or panels have no background color
+
+**Cause**: Missing PrimeNG CSS variables
+
+**Solution**: Add CSS variable fallbacks to `styles.css`:
+
+```css
+:root {
+  --surface-ground: #f8f9fa;
+  --surface-0: #ffffff;
+  --surface-50: #f9fafb;
+  --surface-100: #f3f4f6;
+  --text-color: #1f2937;
+  --primary-color: #3b82f6;
+}
+```
+
+---
+
+#### 🔴 **Module not found: 'ngx-workflow-designer'**
+
+**Solutions**:
+
+```bash
+# 1. Ensure library is installed
+npm install ngx-workflow-designer
+
+# 2. Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# 3. Restart Angular dev server
+ng serve
+```
+
+---
+
+#### 🔴 **Router navigation not working**
+
+**Cause**: Library uses Angular Router but it's not configured
+
+**Solution 1**: Provide router configuration:
+
+```typescript
+import { provideRouter } from '@angular/router';
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    // ... other providers
+  ]
+};
+```
+
+**Solution 2**: Use without router (disable back button):
+
+```typescript
+provideAlertWorkflow({
+  features: {
+    backButton: false  // Disable if no router
+  }
+})
+```
+
+---
+
+#### 🔴 **Validation errors persist after fixing nodes**
+
+**Cause**: Validation doesn't auto-refresh
+
+**Solution**: Manually trigger validation:
+
+```typescript
+import { WorkflowDesignerService } from 'ngx-workflow-designer';
+
+constructor(private workflowService: WorkflowDesignerService) {}
+
+fixAndRevalidate() {
+  // Make your changes
+  this.workflowService.updateNodeData(nodeId, newData);
+  
+  // Re-run validation
+  this.workflowService.runValidate();
+}
+```
+
+---
+
+#### 🔴 **PrimeNG components not styled**
+
+**Cause**: PrimeNG theme not configured
+
+**Solution**: Add PrimeNG provider:
+
+```typescript
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeng/themes/lara';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    providePrimeNG({
+      theme: { preset: Lara }
+    }),
+    // ... other providers
+  ]
+};
+```
+
+---
+
+#### 🔴 **CORS errors when calling API**
+
+**Cause**: Backend not configured for CORS
+
+**Solution**: Configure CORS headers on your backend:
+
+```javascript
+// Example: Express.js backend
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+```
+
+---
+
+#### 🔴 **Build errors about missing dependencies**
+
+**Solution**: Install all peer dependencies:
+
+```bash
+npm install primeng primeicons
+npm install -D tailwindcss postcss autoprefixer
+```
+
+---
+
+### Still Having Issues?
+
+1. **Check the browser console** for detailed error messages
+2. **Verify all files** match the [Complete Minimal Example](#complete-minimal-example)
+3. **Compare with demo app**: https://strikerh.github.io/ngx-workflow-designer/
+4. **Open an issue**: https://github.com/strikerh/ngx-workflow-designer/issues
+
+---
+
+## 📋 Changelog
+
+See [CHANGELOG.md](https://github.com/strikerh/ngx-workflow-designer/blob/master/projects/alert-workflow/CHANGELOG.md) for release notes and migration guides.
+
+**Latest Release**: v0.0.7 - Fixed component styles by removing `@apply` directives for better compatibility
 
 ---
 
