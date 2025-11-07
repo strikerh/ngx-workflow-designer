@@ -1,6 +1,6 @@
 {
   "name": "ngx-workflow-designer",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Production-ready visual workflow designer for Angular 20+ with configuration-driven architecture, PrimeNG integration, and full TypeScript support",
   "keywords": [
     "angular",
