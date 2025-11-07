@@ -1,19 +1,41 @@
 {
   "name": "ngx-workflow-designer",
-  "version": "0.0.3",
-  "description": "Configurable Alert Workflow Designer (Angular 20, zoneless)",
-  "keywords": ["angular", "workflow", "designer", "alert", "library"],
+  "version": "0.0.4",
+  "description": "Production-ready visual workflow designer for Angular 20+ with configuration-driven architecture, PrimeNG integration, and full TypeScript support",
+  "keywords": [
+    "angular",
+    "angular20",
+    "workflow",
+    "workflow-designer",
+    "workflow-engine",
+    "visual-designer",
+    "drag-and-drop",
+    "flow-chart",
+    "primeng",
+    "tailwind",
+    "typescript",
+    "zoneless",
+    "signals",
+    "alert-workflow",
+    "automation",
+    "low-code",
+    "no-code"
+  ],
+  "author": "strikerh",
   "sideEffects": false,
   "license": "MIT",
+  "homepage": "https://strikerh.github.io/ngx-workflow-designer/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/strikerh/ngx-workflow-designer.git"
   },
-  "homepage": "https://github.com/strikerh/ngx-workflow-designer#readme",
   "bugs": {
     "url": "https://github.com/strikerh/ngx-workflow-designer/issues"
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "@angular/animations": ">=20",
     "@angular/common": ">=20",

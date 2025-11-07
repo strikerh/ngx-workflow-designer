@@ -1,71 +1,178 @@
 # ngx-workflow-designer
 
-Configurable, production-ready workflow designer for Angular 20+ (zoneless). Built with PrimeNG 20 and Tailwind CSS. Ships as an Angular library with FESM bundles.
+<p align="center">
+  <img src="https://img.shields.io/npm/v/ngx-workflow-designer" alt="npm version" />
+  <img src="https://img.shields.io/npm/dm/ngx-workflow-designer" alt="npm downloads" />
+  <img src="https://img.shields.io/github/license/strikerh/ngx-workflow-designer" alt="license" />
+  <img src="https://img.shields.io/badge/Angular-20%2B-red" alt="Angular 20+" />
+</p>
 
-- Visual designer: drag-and-drop nodes, connect exits, pan/zoom
-- Inspector: configuration-driven fields (text, number, textarea, select, switch-cases)
-- History: undo/redo with snapshot-based history
-- API integration: CRUD for workflows and templates
-- Router optional: works with or without Angular Router
-- Config-first: drive palette, icons, colors, exits, and node fields from config
+**Production-ready visual workflow designer for Angular 20+** with full TypeScript support, zoneless change detection, and configuration-driven architecture.
 
-Repository: https://github.com/strikerh/ngx-workflow-designer
-NPM: https://www.npmjs.com/package/ngx-workflow-designer
+## ✨ Features
+
+- 🎨 **Visual Designer** - Drag-and-drop nodes, multi-exit connections, pan/zoom canvas
+- ⚙️ **Configuration-Driven** - Define node types, fields, validations, and palette via config
+- 📋 **Smart Inspector** - Auto-generated property panels with conditional field visibility
+- ⏱️ **History System** - Snapshot-based undo/redo with 50-state stack
+- 🔌 **API Integration** - Built-in REST client for workflows, templates, and CRUD operations
+- 🎯 **Dynamic Validation** - Real-time workflow validation with visual error highlighting
+- 🧩 **Flexible Architecture** - Works with or without Angular Router
+- 💾 **Import/Export** - JSON-based workflow serialization with multiple format support
+- 🔍 **Variable System** - Template variable interpolation with default values
+- 🎭 **PrimeNG Themed** - Integrated with PrimeNG 20 components and Lara theme
+
+**Repository:** https://github.com/strikerh/ngx-workflow-designer  
+**NPM:** https://www.npmjs.com/package/ngx-workflow-designer  
+**Demo:** https://strikerh.github.io/ngx-workflow-designer/
 
 ---
 
-## Requirements
+## 📋 Table of Contents
 
-- Angular 20+
-- PrimeNG 20+, primeicons 7+
-- Tailwind CSS 3+
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+  - [Library Provider Options](#library-provider-options)
+  - [Feature Flags](#feature-flags)
+  - [API Configuration](#api-configuration)
+- [Node Configuration](#-node-configuration)
+  - [Defining Node Types](#defining-node-types)
+  - [Property Field Types](#property-field-types)
+  - [Conditional Fields](#conditional-fields)
+  - [Palette Categories](#palette-categories)
+- [Advanced Usage](#-advanced-usage)
+  - [Custom Node Types](#custom-node-types)
+  - [Dynamic Configuration Loading](#dynamic-configuration-loading)
+  - [Variable System](#variable-system)
+  - [Validation Customization](#validation-customization)
+- [API Integration](#-api-integration)
+- [Styling & Theming](#-styling--theming)
+- [Publishing to NPM](#-publishing-to-npm)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
 
 ---
 
-## Installation
+## 📦 Requirements
+
+| Dependency | Version | Required |
+|------------|---------|----------|
+| Angular | 20+ | ✅ |
+| PrimeNG | 20+ | ✅ |
+| primeicons | 7+ | ✅ |
+| Tailwind CSS | 3+ | ✅ |
+| TypeScript | 5.5+ | ✅ |
+
+---
+
+## 🚀 Installation
 
 ```bash
-npm install ngx-workflow-designer primeng primeicons
-```
+# Install the library
+npm install ngx-workflow-designer
 
-optional (Tailwind, if not already installed):
+# Install peer dependencies
+npm install primeng primeicons
 
-```bash
+# Install Tailwind (if not already present)
 npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
 ```
 
 ---
 
-## Quick Start
+## ⚡ Quick Start
 
-### 1) Provide the library config (No Router)
+### 1. Configure Your Application
 
-```ts
-// app.config.ts
+**Without Router:**
+
+```typescript
+// src/app/app.config.ts
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
-import { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from 'ngx-workflow-designer';
+import { 
+  provideAlertWorkflow, 
+  WorkflowDesignerLibConfig, 
+  PALETTE_CATEGORIES 
+} from 'ngx-workflow-designer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideHttpClient(),
     provideAnimations(),
-    providePrimeNG({ theme: { preset: Lara }, cssLayer: { name: 'primeng', order: 'primeng, app' } }),
-    ...provideAlertWorkflow(<WorkflowDesignerLibConfig>{
-      api: { baseUrl: 'https://api.example.com/workflow', templatesUrl: 'https://api.example.com/workflow' },
-      features: { import: true, export: true, new: true, templates: true, save: true, workflowList: true, backButton: false, backUrl: '/' },
-      palette: { categories: PALETTE_CATEGORIES }
-    })
+    providePrimeNG({ 
+      theme: { preset: Lara },
+      cssLayer: { name: 'primeng', order: 'primeng, app' }
+    }),
+    ...provideAlertWorkflow({
+      api: {
+        baseUrl: 'https://api.example.com/workflow',
+        templatesUrl: 'https://api.example.com/templates',
+        token: 'Bearer your-token' // Optional
+      },
+      features: {
+        import: true,
+        export: true,
+        new: true,
+        templates: true,
+        save: true,
+        workflowList: true,
+        backButton: false,
+        backUrl: '/'
+      },
+      palette: {
+        categories: PALETTE_CATEGORIES
+      }
+    } as WorkflowDesignerLibConfig)
   ]
 };
 ```
 
-```ts
-// app.component.ts (or any page component)
+**With Router:**
+
+```typescript
+// src/app/app.routes.ts
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'workflow', pathMatch: 'full' },
+  { 
+    path: 'workflow', 
+    loadComponent: () => import('ngx-workflow-designer')
+      .then(m => m.WorkflowDesignerComponent) 
+  },
+  { 
+    path: 'workflow/:id', 
+    loadComponent: () => import('ngx-workflow-designer')
+      .then(m => m.WorkflowDesignerComponent) 
+  }
+];
+```
+
+```typescript
+// src/app/app.config.ts
+import { provideRouter } from '@angular/router';
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    // ... other providers
+  ]
+};
+```
+
+### 2. Use the Component
+
+```typescript
+// src/app/app.component.ts
 import { Component } from '@angular/core';
 import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 
@@ -78,24 +185,464 @@ import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 export class AppComponent {}
 ```
 
-### 2) With Router (optional)
+### 3. Configure Tailwind
 
-```ts
-// app.routes.ts
-import { Routes } from '@angular/router';
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    './src/**/*.{html,ts}',
+    './node_modules/ngx-workflow-designer/**/*.{html,ts,mjs}'
+  ],
+  theme: {
+    extend: {}
+  },
+  plugins: []
+};
+```
 
-export const routes: Routes = [
-  { path: '', redirectTo: 'workflow', pathMatch: 'full' },
-  { path: 'workflow', loadComponent: () => import('ngx-workflow-designer').then(m => m.WorkflowDesignerComponent) }
+```css
+/* src/styles.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+---
+
+## ⚙️ Configuration
+
+---
+
+## ⚙️ Configuration
+
+### Library Provider Options
+
+```typescript
+interface WorkflowDesignerLibConfig {
+  api: {
+    baseUrl: string;           // Main REST endpoint for workflows
+    templatesUrl?: string;     // Optional separate endpoint for templates
+    token?: string;            // Optional Bearer token (or use HTTP interceptor)
+  };
+  features: {
+    import: boolean;           // Show "Import JSON" button
+    export: boolean;           // Show "Export JSON" button
+    new: boolean;              // Show "New Workflow" button
+    templates: boolean;        // Show templates dropdown
+    save: boolean;             // Show "Save" button
+    workflowList: boolean;     // Show workflows dropdown
+    backButton: boolean;       // Show back navigation button
+    backUrl: string;           // URL for back button navigation
+  };
+  nodesConfig?: {              // Optional: Override node type configuration source
+    source?: 'ts' | 'json';    // Default: 'ts' (TypeScript config)
+    jsonUrl?: string;          // URL to fetch JSON config (if source='json')
+  };
+  palette?: {
+    categories?: PaletteCategoryConfig[];  // Palette section definitions
+    nodeTypes?: NodeTypeConfig[];          // Node type definitions (highest priority)
+  };
+}
+```
+
+### Feature Flags
+
+All feature flags default to `true` when not specified. Disable features you don't need:
+
+```typescript
+provideAlertWorkflow({
+  // ...
+  features: {
+    import: false,        // Hide import button
+    export: true,         // Show export button
+    new: true,            // Show new workflow button
+    templates: false,     // Hide templates (if you manage workflows differently)
+    save: true,           // Show save button
+    workflowList: false,  // Hide workflow list (e.g., if using external navigation)
+    backButton: true,     // Show back button
+    backUrl: '/dashboard' // Navigate to dashboard on back
+  }
+})
+```
+
+### API Configuration
+
+#### Environment-Based Configuration
+
+```typescript
+// src/environments/environment.ts
+export const environment = {
+  production: false,
+  workflowApiUrl: 'http://localhost:3000',
+  workflowApiToken: ''
+};
+
+// src/environments/environment.prod.ts
+export const environment = {
+  production: true,
+  workflowApiUrl: 'https://api.production.com',
+  workflowApiToken: 'your-production-token'
+};
+```
+
+```typescript
+// src/app/app.config.ts
+import { environment } from '../environments/environment';
+
+provideAlertWorkflow({
+  api: {
+    baseUrl: `${environment.workflowApiUrl}/workflow`,
+    templatesUrl: `${environment.workflowApiUrl}/templates`,
+    token: environment.workflowApiToken
+  },
+  // ...
+})
+```
+
+#### Using HTTP Interceptor for Auth
+
+```typescript
+// Don't provide token in config, use an interceptor instead
+import { HttpInterceptorFn } from '@angular/common/http';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    req = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` }
+    });
+  }
+  return next(req);
+};
+
+// In app.config.ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor])),
+    // ...
+  ]
+};
+```
+
+---
+
+## 🎨 Node Configuration
+
+### Defining Node Types
+
+Node types control the palette, inspector fields, exits, and visual appearance:
+
+```typescript
+import { NodeTypeConfig } from 'ngx-workflow-designer';
+
+export const WORKFLOW_NODES_CONFIG: NodeTypeConfig[] = [
+  {
+    type: 'trigger.manual',              // Unique identifier (category.name pattern)
+    category: 'trigger',                 // Used for palette grouping
+    label: 'Manual Trigger',             // Display name
+    description: 'Manually start workflow',  // Tooltip text
+    icon: '⚡',                          // Emoji or icon class
+    color: 'bg-amber-100 border-amber-300 text-amber-800',  // Palette button colors
+    nodeColor: 'bg-amber-50 border-amber-200',              // Canvas node colors
+    properties: [                        // Inspector field definitions
+      {
+        key: 'label',
+        label: 'Trigger Name',
+        type: 'text',
+        required: true,
+        default: 'Manual Trigger',
+        showInNode: true               // Show this field's value in node
+      }
+    ],
+    exits: ['next']                      // Exit point names
+  },
+  {
+    type: 'control.if',
+    category: 'control',
+    label: 'If / Else',
+    description: 'Branch based on condition',
+    icon: '🔀',
+    color: 'bg-sky-100 border-sky-300 text-sky-800',
+    nodeColor: 'bg-sky-50 border-sky-200',
+    properties: [
+      {
+        key: 'condition',
+        label: 'Condition Expression',
+        type: 'text',
+        required: true,
+        placeholder: 'e.g., {{temperature}} > 30',
+        help: 'Supports variable interpolation with {{varName}}',
+        showInNode: true
+      }
+    ],
+    exits: ['onTrue', 'onFalse']         // Multiple exits
+  },
+  {
+    type: 'control.switch',
+    category: 'control',
+    label: 'Switch',
+    description: 'Multi-way branch',
+    icon: '🧭',
+    color: 'bg-sky-100 border-sky-300 text-sky-800',
+    nodeColor: 'bg-sky-50 border-sky-200',
+    properties: [
+      {
+        key: 'expression',
+        label: 'Switch Expression',
+        type: 'text',
+        required: true,
+        placeholder: '{{status}}'
+      },
+      {
+        key: 'cases',
+        label: 'Cases',
+        type: 'switch-cases',              // Special field type
+        required: true,
+        help: 'Dynamic exit points based on cases'
+      }
+    ],
+    exits: []  // Dynamically generated from 'cases' parameter
+  },
+  {
+    type: 'action.email',
+    category: 'action',
+    label: 'Send Email',
+    description: 'Send email notification',
+    icon: '✉️',
+    color: 'bg-emerald-100 border-emerald-300 text-emerald-800',
+    nodeColor: 'bg-emerald-50 border-emerald-200',
+    properties: [
+      {
+        key: 'to',
+        label: 'Recipient',
+        type: 'text',
+        required: true,
+        placeholder: 'user@example.com',
+        showInNode: true
+      },
+      {
+        key: 'subject',
+        label: 'Subject',
+        type: 'text',
+        required: true,
+        placeholder: 'Alert: {{alertType}}'
+      },
+      {
+        key: 'body',
+        label: 'Message Body',
+        type: 'textarea',
+        required: true,
+        placeholder: 'Enter email content...'
+      },
+      {
+        key: 'priority',
+        label: 'Priority',
+        type: 'select',
+        default: 'normal',
+        options: {
+          choices: [
+            { value: 'low', label: 'Low' },
+            { value: 'normal', label: 'Normal' },
+            { value: 'high', label: 'High' }
+          ]
+        }
+      }
+    ],
+    exits: ['next']
+  }
+];
+```
+
+### Property Field Types
+
+#### Text Field
+
+```typescript
+{
+  key: 'username',
+  label: 'Username',
+  type: 'text',
+  required: true,
+  placeholder: 'Enter username',
+  help: 'System username for authentication',
+  default: '',
+  showInNode: false
+}
+```
+
+#### Number Field
+
+```typescript
+{
+  key: 'timeout',
+  label: 'Timeout (seconds)',
+  type: 'number',
+  required: false,
+  default: 30,
+  placeholder: '30',
+  help: 'Request timeout in seconds'
+}
+```
+
+#### Textarea Field
+
+```typescript
+{
+  key: 'message',
+  label: 'Message Content',
+  type: 'textarea',
+  required: true,
+  placeholder: 'Enter your message here...',
+  default: ''
+}
+```
+
+#### Select Field
+
+```typescript
+{
+  key: 'method',
+  label: 'HTTP Method',
+  type: 'select',
+  required: true,
+  default: 'GET',
+  options: {
+    choices: [
+      { value: 'GET', label: 'GET' },
+      { value: 'POST', label: 'POST' },
+      { value: 'PUT', label: 'PUT' },
+      { value: 'DELETE', label: 'DELETE' }
+    ]
+  }
+}
+```
+
+#### Switch-Cases Field
+
+Special field type for dynamic branching (used in Switch node):
+
+```typescript
+{
+  key: 'cases',
+  label: 'Case Values',
+  type: 'switch-cases',
+  required: true,
+  help: 'Comma-separated case values. A "default" exit is always added.'
+}
+```
+
+User enters: `pending, approved, rejected`  
+Results in exits: `['pending', 'approved', 'rejected', 'default']`
+
+### Conditional Fields
+
+Show/hide fields based on other field values:
+
+```typescript
+{
+  type: 'action.http',
+  // ...
+  properties: [
+    {
+      key: 'method',
+      label: 'HTTP Method',
+      type: 'select',
+      default: 'GET',
+      options: {
+        choices: [
+          { value: 'GET', label: 'GET' },
+          { value: 'POST', label: 'POST' }
+        ]
+      }
+    },
+    {
+      key: 'body',
+      label: 'Request Body',
+      type: 'textarea',
+      showIf: {                          // Conditional visibility
+        watchField: 'method',
+        operator: 'equals',
+        value: 'POST'
+      }
+    },
+    {
+      key: 'timeout',
+      label: 'Timeout',
+      type: 'number',
+      showIf: {                          // Multiple conditions (OR logic)
+        watchField: 'method',
+        operator: 'includes',
+        value: ['POST', 'PUT', 'DELETE']
+      }
+    }
+  ]
+}
+```
+
+**Supported operators:**
+- `equals` - Exact match
+- `notEquals` - Not equal
+- `includes` - Value is in array
+- `notIncludes` - Value not in array
+- `greaterThan` - Numeric comparison
+- `lessThan` - Numeric comparison
+
+### Palette Categories
+
+Define how nodes are grouped in the left sidebar:
+
+```typescript
+import { PaletteCategoryConfig } from 'ngx-workflow-designer';
+
+export const PALETTE_CATEGORIES: PaletteCategoryConfig[] = [
+  {
+    id: 'triggers',
+    label: 'Triggers',
+    icon: '⚡',
+    headerClass: 'text-amber-700',
+    filterPrefix: 'trigger.'          // Show nodes starting with 'trigger.'
+  },
+  {
+    id: 'controls',
+    label: 'Flow Control',
+    icon: '🧭',
+    headerClass: 'text-sky-700',
+    filterPrefix: 'control.'
+  },
+  {
+    id: 'actions',
+    label: 'Actions',
+    icon: '🎯',
+    headerClass: 'text-emerald-700',
+    filterPrefix: 'action.'
+  },
+  {
+    id: 'terminals',
+    label: 'End Points',
+    icon: '⛔',
+    headerClass: 'text-slate-700',
+    filterPrefix: 'end.'
+  },
+  {
+    id: 'utility',
+    label: 'Utilities',
+    icon: '🔧',
+    headerClass: 'text-purple-700',
+    filterPrefix: ['var.', 'audit.', 'utility.']  // Multiple prefixes
+  }
 ];
 ```
 
 ---
 
-## Configuration (Library Provider)
+## 🚀 Advanced Usage
 
-```ts
-interface WorkflowDesignerLibConfig {
+### Custom Node Types
+
+You can provide custom node types in three ways (priority order):
+
+1. **Via Provider (Highest Priority)**
   api: {
     baseUrl: string;           // REST endpoint base for workflow CRUD
     templatesUrl: string;      // REST endpoint for templates
@@ -301,12 +848,33 @@ interface ApiWorkflow {
 
 ## Troubleshooting
 
-- Styles missing? Ensure Tailwind scans `projects/**/*` and your global styles import Tailwind directives. Provide a PrimeNG theme with cssLayer.
-- Router provided but navigation not used? If you don’t want router, remove `provideRouter()` or keep routes empty.
-- “Cannot find module 'ngx-workflow-designer'”? Ensure it’s installed and your build can resolve node_modules. For mono repos, you can add a TS path for local dev only.
+- **Styles missing?** Ensure Tailwind scans library templates and global styles import Tailwind directives. Provide a PrimeNG theme.
+- **Module not found?** Verify installation: `npm install ngx-workflow-designer`
+- **Router navigation not working?** Ensure `provideRouter()` is configured, or disable router-dependent features.
+- **Validation errors persisting?** Re-run validation: `workflowService.runValidate()`
+- **API errors?** Check CORS configuration and authentication tokens.
+
+See the **[Troubleshooting](#-troubleshooting)** section above for detailed solutions.
 
 ---
 
-## License
+## 📄 License
 
-MIT
+MIT © [strikerh](https://github.com/strikerh)
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please fork the repository and submit a Pull Request.
+
+---
+
+## 📞 Support
+
+- **Issues:** https://github.com/strikerh/ngx-workflow-designer/issues
+- **NPM:** https://www.npmjs.com/package/ngx-workflow-designer
+
+---
+
+**Made with ❤️ using Angular 20, PrimeNG, and Tailwind CSS**
