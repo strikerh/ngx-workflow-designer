@@ -6,7 +6,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 import { WorkflowVariablesService } from '../workflow-variables.service';
 import { WorkflowNodesConfigService } from '../workflow-nodes-config.service';
-import { NodeFieldConfig } from '../../../workflow-designer/workflow-designer.interfaces';
+import { NodeFieldConfig } from '../workflow-designer.interfaces';
 
 @Component({
   selector: 'app-workflow-inspector',

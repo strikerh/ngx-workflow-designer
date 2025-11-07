@@ -9,7 +9,7 @@ import {
   WorkflowExport,
   WorkflowHistoryState,
   NODE_SIZE,
-} from '../../workflow-designer/workflow-designer.interfaces';
+} from './workflow-designer.interfaces';
 import { WorkflowApiService, ApiWorkflow } from '../core/services/workflow-api.service';
 import { WorkflowHistoryService } from './workflow-history.service';
 import { WorkflowNodesConfigService } from './workflow-nodes-config.service';

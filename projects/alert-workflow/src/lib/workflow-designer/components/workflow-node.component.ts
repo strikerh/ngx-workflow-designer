@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, HostBinding, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WorkflowNode } from '../../../workflow-designer/workflow-designer.interfaces';
+import { WorkflowNode } from '../workflow-designer.interfaces';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 import { WorkflowNodesConfigService } from '../workflow-nodes-config.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';

@@ -81,5 +81,20 @@
         }
       }
     }
+    ,
+    "alert-workflow": {
+      "projectType": "library",
+      "root": "projects/alert-workflow",
+      "sourceRoot": "projects/alert-workflow/src",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:library",
+          "options": {
+            "tsConfig": "projects/alert-workflow/tsconfig.lib.json",
+            "packageJson": "projects/alert-workflow/package.json"
+          }
+        }
+      }
+    }
   }
 }

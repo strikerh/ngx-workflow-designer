@@ -1,10 +1,10 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { NodeTypeConfig, WorkflowNodesConfig, PaletteItem } from '../../workflow-designer/workflow-designer.interfaces';
+import { NodeTypeConfig, WorkflowNodesConfig, PaletteItem } from './workflow-designer.interfaces';
 import { WORKFLOW_NODES_CONFIG } from './config/workflow-nodes-config.data';
-import { WORKFLOW_NODE_TYPES } from '../../core/workflow-node-types.token';
-import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workflow-lib.config';
+import { WORKFLOW_NODE_TYPES } from '../core/workflow-node-types.token';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../core/workflow-lib.config';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowNodesConfigService {

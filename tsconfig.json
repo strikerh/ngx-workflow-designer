@@ -15,9 +15,13 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "@quexlo/alert-workflow": [
+      "ngx-workflow-designer": [
         "./projects/alert-workflow/src/public-api.ts"
       ]
+      /* Legacy alias kept temporarily for internal docs/examples; prefer the new name */
+      // "@quexlo/alert-workflow": [
+      //   "./projects/alert-workflow/src/public-api.ts"
+      // ]
     }
   },
   "angularCompilerOptions": {

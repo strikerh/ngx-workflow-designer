@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PALETTE_CATEGORIES } from '../config/workflow-nodes-config.data';
-import { PaletteCategoryConfig } from '../../../workflow-designer/workflow-designer.interfaces';
-import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../../core/workflow-lib.config';
+import { PaletteCategoryConfig } from '../workflow-designer.interfaces';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workflow-lib.config';
 
 @Component({
   selector: 'app-workflow-palette',

@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 import { WorkflowNodeComponent } from './workflow-node.component';
-import { SidePageService } from '../../../core/services/side-page.service';
+import { SidePageService } from '../../core/services/side-page.service';
 import { WorkflowHistoryPanelComponent } from './workflow-history-panel.component';
 
 @Component({

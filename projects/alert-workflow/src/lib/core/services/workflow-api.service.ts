@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../../core/workflow-lib.config';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../workflow-lib.config';
 
 export interface ApiWorkflow {
   workflowId: number;

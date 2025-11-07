@@ -3,7 +3,7 @@ import {
   GenericSelectorOptions,
   DynamicSelectOptions,
   PaletteCategoryConfig,
-} from '../../../workflow-designer/workflow-designer.interfaces';
+} from '../workflow-designer.interfaces';
 
 export const PALETTE_CATEGORIES: PaletteCategoryConfig[] = [
   { id: 'triggers', label: 'Triggers', icon: '⚡', headerClass: 'text-amber-700', filterPrefix: 'trigger.' },

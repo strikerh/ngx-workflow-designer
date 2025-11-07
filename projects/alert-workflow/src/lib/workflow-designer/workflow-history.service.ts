@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { WorkflowHistoryState } from '../../workflow-designer/workflow-designer.interfaces';
+import { WorkflowHistoryState } from './workflow-designer.interfaces';
 
 /**
  * Service for managing undo/redo history for workflow designer

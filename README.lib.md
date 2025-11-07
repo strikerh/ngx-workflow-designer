@@ -1,4 +1,6 @@
-# @quexlo/alert-workflow# @quexlo/alert-workflow (Angular 20, Standalone, Zoneless)
+# ngx-workflow-designer (Angular 20, Standalone, Zoneless)
+
+Repository: https://github.com/strikerh/ngx-workflow-designer
 
 
 
@@ -22,7 +24,7 @@ Visual workflow designer with drag-and-drop nodes, connection management, valida
 
 - [Requirements](#requirements)    "paths": {
 
-- [Installation](#installation)      "@quexlo/alert-workflow": ["./projects/alert-workflow/src/public-api.ts"]
+- [Installation](#installation)      "ngx-workflow-designer": ["./projects/alert-workflow/src/public-api.ts"]
 
 - [Quick Start](#quick-start)    }
 
@@ -35,7 +37,7 @@ Visual workflow designer with drag-and-drop nodes, connection management, valida
 - [Node Configuration](#node-configuration)
   - [How to build WORKFLOW_NODES_CONFIG](#how-to-build-workflow_nodes_config)
 
-- [Styling](#styling)In external hosts, publish the lib and install it, then import from `@quexlo/alert-workflow`.
+- [Styling](#styling)In external hosts, publish the lib and install it, then import from `ngx-workflow-designer`.
 
 - [Examples](#examples)
 
@@ -63,7 +65,7 @@ import { ApplicationConfig } from '@angular/core';
 
 - **History**: Undo/Redo support with state snapshots
 
-- **Validation**: Real-time workflow validation with error reportingimport { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from '@quexlo/alert-workflow';
+- **Validation**: Real-time workflow validation with error reportingimport { provideAlertWorkflow, WorkflowDesignerLibConfig, PALETTE_CATEGORIES } from 'ngx-workflow-designer';
 
 - **Import/Export**: JSON import/export for workflows
 
@@ -139,7 +141,7 @@ module.exports = {```ts
 
     "./projects/**/*.{html,ts}"  // Include library templates    path: '',
 
-  ],    loadComponent: () => import('@quexlo/alert-workflow').then(m => m.WorkflowDesignerComponent)
+  ],    loadComponent: () => import('ngx-workflow-designer').then(m => m.WorkflowDesignerComponent)
 
   theme: {  }
 
@@ -161,7 +163,7 @@ Option B — Use as a tag in a host template (standalone import):
 
 module.exports = {import { Component } from '@angular/core';
 
-  plugins: {import { WorkflowDesignerComponent } from '@quexlo/alert-workflow';
+  plugins: {import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 
     tailwindcss: {},
 
@@ -207,7 +209,7 @@ For local development (monorepo):import { environment } from './environments/env
 
     "paths": {    token: environment.workflowApiToken
 
-      "@quexlo/alert-workflow": ["./projects/alert-workflow/src/public-api.ts"]  },
+  "ngx-workflow-designer": ["./projects/alert-workflow/src/public-api.ts"]  },
 
     }  features: { /* flags here */ },
 
@@ -223,9 +225,9 @@ For production, publish the library and install via npm:### Upgrade notes (from 
 
 ```bash
 
-npm install @quexlo/alert-workflow- Replace local imports with library imports:
+npm install ngx-workflow-designer - Replace local imports with library imports:
 
-```  - `@quexlo/alert-workflow` → imports `WorkflowDesignerComponent`, `provideAlertWorkflow`, tokens, types.
+```  - `ngx-workflow-designer` → imports `WorkflowDesignerComponent`, `provideAlertWorkflow`, tokens, types.
 
 - Remove duplicated app-side implementations of designer components/services.
 
@@ -255,7 +257,7 @@ import { providePrimeNG } from 'primeng/config';```
 
 import Lara from '@primeng/themes/lara';
 
-import { provideAlertWorkflow, PALETTE_CATEGORIES } from '@quexlo/alert-workflow';- Build
+import { provideAlertWorkflow, PALETTE_CATEGORIES } from 'ngx-workflow-designer';- Build
 
 
 
@@ -311,7 +313,7 @@ export const appConfig: ApplicationConfig = {```powershell
 **`app.component.ts`:**
 ```ts
 import { Component } from '@angular/core';
-import { WorkflowDesignerComponent } from '@quexlo/alert-workflow';
+import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 
 @Component({
   selector: 'app-root',
@@ -393,7 +395,7 @@ Best for simple single-page apps.
 
 ```ts
 import { Component } from '@angular/core';
-import { WorkflowDesignerComponent } from '@quexlo/alert-workflow';
+import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 
 @Component({
   selector: 'app-workflow-page',
@@ -429,8 +431,8 @@ export const routes: Routes = [
       .then(m => m.WorkflowListComponent)
   },
   {
-    path: 'workflow',
-    loadComponent: () => import('@quexlo/alert-workflow')
+  path: 'workflow',
+  loadComponent: () => import('ngx-workflow-designer')
       .then(m => m.WorkflowDesignerComponent)
   }
 ];
@@ -548,7 +550,7 @@ The library includes these node types by default:
 Add custom node types by providing them in the config:
 
 ```ts
-import { NodeTypeConfig } from '@quexlo/alert-workflow';
+import { NodeTypeConfig } from 'ngx-workflow-designer';
 
 const customNodes: NodeTypeConfig[] = [
   {
@@ -582,7 +584,7 @@ const customNodes: NodeTypeConfig[] = [
       Categories control how nodes are grouped in the left palette. The `filterPrefix` matches your node `type` prefixes.
 
       ```ts
-      import { PaletteCategoryConfig } from '@quexlo/alert-workflow';
+  import { PaletteCategoryConfig } from 'ngx-workflow-designer';
 
       export const PALETTE_CATEGORIES: PaletteCategoryConfig[] = [
         { id: 'triggers',  label: 'Triggers',  icon: '⚡', headerClass: 'text-amber-700',  filterPrefix: 'trigger.' },
@@ -602,7 +604,7 @@ const customNodes: NodeTypeConfig[] = [
       Each node type object describes how it looks, what fields it exposes, and what exits it has.
 
       ```ts
-      import { NodeTypeConfig } from '@quexlo/alert-workflow';
+  import { NodeTypeConfig } from 'ngx-workflow-designer';
 
       export const WORKFLOW_NODES_CONFIG: NodeTypeConfig[] = [
         {
@@ -945,7 +947,7 @@ providePrimeNG({
 
 ### TypeScript errors
 
-**Problem**: `Cannot find module '@quexlo/alert-workflow'`
+**Problem**: `Cannot find module 'ngx-workflow-designer'`
 
 **Solution**: Ensure the path alias is configured in `tsconfig.json`:
 
@@ -953,7 +955,7 @@ providePrimeNG({
 {
   "compilerOptions": {
     "paths": {
-      "@quexlo/alert-workflow": ["./projects/alert-workflow/src/public-api.ts"]
+  "ngx-workflow-designer": ["./projects/alert-workflow/src/public-api.ts"]
     }
   }
 }
@@ -966,6 +968,7 @@ providePrimeNG({
 - **Architecture**: See `projects/alert-workflow/src/lib/alert-wf/docs/technical/architecture.md`
 - **Node Config Guide**: See `projects/alert-workflow/src/lib/alert-wf/docs/guides/node-configuration.md`
 - **API Integration**: See `projects/alert-workflow/src/lib/alert-wf/docs/technical/api-integration.md`
+- **GitHub Repository**: https://github.com/strikerh/ngx-workflow-designer
 
 ---
 
@@ -977,13 +980,13 @@ providePrimeNG({
 
 ## 🤝 Contributing
 
-[Contributing guidelines]
+Issues and PRs welcome at: https://github.com/strikerh/ngx-workflow-designer
 
 ---
 
 ## 📞 Support
 
 For issues and questions:
-- GitHub Issues: [Your repo URL]
+- GitHub Issues: https://github.com/strikerh/ngx-workflow-designer/issues
 - Email: [Your email]
-- Docs: [Your docs URL]
+- Docs: https://github.com/strikerh/ngx-workflow-designer#readme

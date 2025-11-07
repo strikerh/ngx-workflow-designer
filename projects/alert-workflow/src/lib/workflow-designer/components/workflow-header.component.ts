@@ -5,7 +5,7 @@ import { WorkflowDesignerService } from '../workflow-designer.service';
 import { ApiWorkflow } from '../../core/services/workflow-api.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../../core/workflow-lib.config';
+import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workflow-lib.config';
 
 @Component({
   selector: 'app-workflow-header',
@@ -109,7 +109,7 @@ import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../../core/wo
   `,
   styles: [`
   :host{
-      @apply col-span-3 row-[1]   flex items-center justify-between px-3
+      @apply col-span-3 row-[1]   flex items-center justify-between px-3;
   }
   `]
 })

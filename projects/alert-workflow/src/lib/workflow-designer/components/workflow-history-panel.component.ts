@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidePageRef, SidePageData, SIDE_PAGE_DATA, SIDE_PAGE_REF } from '../../../core/services/side-page.service';
+import { SidePageRef, SidePageData, SIDE_PAGE_DATA, SIDE_PAGE_REF } from '../../core/services/side-page.service';
 import { WorkflowDesignerService } from '../workflow-designer.service';
 
 @Component({

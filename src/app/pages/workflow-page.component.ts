@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { WorkflowDesignerComponent } from '@quexlo/alert-workflow';
+import { WorkflowDesignerComponent } from 'ngx-workflow-designer';
 
 @Component({
   selector: 'app-workflow-page',

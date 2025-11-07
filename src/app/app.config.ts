@@ -5,7 +5,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
 
-import { provideAlertWorkflow, WorkflowDesignerLibConfig } from '@quexlo/alert-workflow';
+import { provideAlertWorkflow, WorkflowDesignerLibConfig } from 'ngx-workflow-designer';
 import { environment } from '../environments/environment';
 import { PALETTE_CATEGORIES, WORKFLOW_NODES_CONFIG } from './workflow-nodes-config.data';
 

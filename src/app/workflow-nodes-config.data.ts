@@ -1,4 +1,4 @@
-import { NodeTypeConfig, PaletteCategoryConfig } from "@quexlo/alert-workflow";
+import { NodeTypeConfig, PaletteCategoryConfig } from "ngx-workflow-designer";
 
 
 export const PALETTE_CATEGORIES: PaletteCategoryConfig[] = [
