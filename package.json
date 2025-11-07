@@ -7,9 +7,11 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "build:lib": "ng-packagr -p projects/alert-workflow/ng-package.json",
     "pack:lib": "cd dist/alert-workflow && npm pack",
-  "publish:lib": "cd dist/alert-workflow && npm publish --access public"
+    "publish:lib": "cd dist/alert-workflow && npm publish --access public"
   },
   "prettier": {
     "printWidth": 100,

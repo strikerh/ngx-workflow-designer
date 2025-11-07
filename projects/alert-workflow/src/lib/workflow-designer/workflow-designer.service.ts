@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, Optional } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -42,6 +42,9 @@ export class WorkflowDesignerService {
   invalidFields = signal<Map<string, string[]>>(new Map());
   unconnectedExits = signal<Map<string, string[]>>(new Map());
   unconnectedInputs = signal<Set<string>>(new Set());
+
+  // Services
+  private router = inject(Router, { optional: true });
 
   // Drag state
   private dragState: DragState = { draggingId: null, dx: 0, dy: 0 };
@@ -101,7 +104,6 @@ export class WorkflowDesignerService {
     private configService: WorkflowNodesConfigService,
     private variablesService: WorkflowVariablesService,
     private specialMarkersService: SpecialMarkersService,
-    @Optional() private router: Router | null,
   ) {
     this.setupMouseListeners();
     this.loadTemplateIds();

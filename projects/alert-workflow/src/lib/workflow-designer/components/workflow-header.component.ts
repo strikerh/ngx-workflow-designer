@@ -1,4 +1,4 @@
-import { Component, inject, signal, Optional } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { WorkflowDesignerService } from '../workflow-designer.service';
@@ -115,10 +115,10 @@ import { WORKFLOW_LIB_CONFIG, WorkflowDesignerLibConfig } from '../../core/workf
 })
 export class WorkflowHeaderComponent {
   libConfig = inject(WORKFLOW_LIB_CONFIG, { optional: true }) as WorkflowDesignerLibConfig | undefined;
+  private router = inject(Router, { optional: true });
 
   constructor(
     public workflowService: WorkflowDesignerService,
-    @Optional() private router: Router | null,
     private messageService: MessageService,
   ) {}
 
