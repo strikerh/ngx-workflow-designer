@@ -165,7 +165,25 @@ export class WorkflowNodeComponent {
     return this.workflowService.NODE_SIZE.w;
   }
   @HostBinding('style.height.px') get nodeHeight() {
-    return this.workflowService.NODE_SIZE.h;
+    return this.calculateNodeHeight();
+  }
+
+  /**
+   * Calculate dynamic node height based on number of exit points
+   * Base height: 92px
+   * If exits > 4: add 20px per additional exit point
+   */
+  private calculateNodeHeight(): number {
+    const baseHeight = this.workflowService.NODE_SIZE.h;
+    const exitCount = this.nodeExits().length;
+    
+    if (exitCount <= 4) {
+      return baseHeight;
+    }
+    
+    // Add 20px for each exit point beyond 4
+    const additionalHeight = (exitCount - 4) * 26;
+    return baseHeight + additionalHeight;
   }
 
   // Computed property to get exits for this node type
@@ -216,11 +234,13 @@ export class WorkflowNodeComponent {
 
   getExitPointY(index: number): number {
     const exits = this.nodeExits();
-    if (exits.length === 0) return this.workflowService.NODE_SIZE.h / 2;
-    if (exits.length === 1) return this.workflowService.NODE_SIZE.h / 2;
+    const nodeHeight = this.calculateNodeHeight();
+    
+    if (exits.length === 0) return nodeHeight / 2;
+    if (exits.length === 1) return nodeHeight / 2;
 
     const padding = 20;
-    const availableHeight = this.workflowService.NODE_SIZE.h - padding * 2;
+    const availableHeight = nodeHeight - padding * 2;
     const spacing = exits.length > 1 ? availableHeight / (exits.length - 1) : 0;
 
     return padding + index * spacing;

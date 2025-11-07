@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.10] - 2025-11-08
+
+### Added
+- **Dynamic Node Height**: Workflow nodes now automatically adjust height based on number of exit points
+  - Base height remains `92px` for nodes with 4 or fewer exit points
+  - Nodes with more than 4 exit points grow by `20px` per additional exit point
+  - Exit points are automatically evenly distributed along the node height
+  - Particularly useful for Switch nodes with many cases
+
+### Changed
+- `WorkflowNodeComponent.calculateNodeHeight()` now computes height dynamically
+- Exit point Y-positioning now uses calculated height instead of fixed `NODE_SIZE.h`
+- Improved visual layout for complex workflows with multi-exit nodes
+
+### Benefits
+- No more overlapping exit points on Switch nodes with many cases
+- Better visual clarity for complex branching logic
+- Automatic adaptation to node configuration without manual adjustment
+
 ## [0.0.9] - 2025-11-08
 
 ### Fixed
